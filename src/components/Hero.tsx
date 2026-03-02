@@ -1,13 +1,13 @@
-import { Coffee, Code2 } from 'lucide-react';
+import { Code2 } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/material/styles';
 
 export function Hero() {
   const theme = useTheme();
+  const email = import.meta.env.VITE_USER_EMAIL;
 
   return (
     <Box
@@ -21,18 +21,6 @@ export function Hero() {
       }}
     >
       <Stack spacing={{ xs: 2, sm: 3 }}>
-        <Chip
-          icon={<Coffee size={16} />}
-          label="Available for interesting projects"
-          sx={{
-            width: 'fit-content',
-            backgroundColor: theme.palette.mode === 'light' ? '#f4ede4' : '#3d2f26',
-            color: theme.palette.text.secondary,
-            borderColor: theme.palette.divider,
-          }}
-          variant="outlined"
-        />
-
         <Typography
           component="h1"
           variant="h1"
@@ -40,38 +28,41 @@ export function Hero() {
             fontSize: { xs: '1.875rem', sm: '2.25rem', md: '3rem' },
           }}
         >
-          Hi, I'm {' '}
           <Box
             component="span"
-            sx={{
-              color: theme.palette.secondary.main,
-            }}
+            sx={{ color: theme.palette.secondary.main }}
           >
-            Your Name
+            Repositório Acadêmico
           </Box>
-        </Typography>
-
-        <Typography
-          variant="h5"
-          sx={{
-            color: theme.palette.text.secondary,
-            maxWidth: '42rem',
-          }}
-        >
-          IT Professional & Technology Enthusiast
         </Typography>
 
         <Typography
           variant="body1"
           sx={{
             maxWidth: '42rem',
-            lineHeight: 1.625,
+            lineHeight: 1.7,
           }}
         >
-          I work in IT and love experimenting with new technologies, tools, and solutions.
-          This is my space where I document what I learn, share tutorials, and write about
-          the things I try and test almost weekly. If you're exploring similar technologies
-          or looking for practical insights, you might find something useful here.
+          Esta plataforma funciona como um repositório estruturado das minhas
+          atividades acadêmicas, estudos técnicos e projetos desenvolvidos no
+          contexto do Bacharelado em Ciência da Computação. Aqui registro o
+          progresso de disciplinas, experimentos práticos, contribuições em
+          software livre e atividades de pesquisa realizadas ao longo do curso.
+        </Typography>
+
+        <Typography
+          variant="body1"
+          sx={{
+            maxWidth: '42rem',
+            lineHeight: 1.7,
+            color: theme.palette.text.secondary,
+          }}
+        >
+          O objetivo é manter um acompanhamento público e organizado do
+          desenvolvimento dos projetos, documentando metodologias adotadas,
+          decisões técnicas, resultados obtidos e reflexões sobre o processo
+          de aprendizagem — consolidando este espaço como um portfólio e como
+          uma base de conhecimento em constante evolução.
         </Typography>
 
         <Stack
@@ -83,22 +74,17 @@ export function Hero() {
             variant="contained"
             href="#subjects"
             startIcon={<Code2 size={18} />}
-            sx={{
-              px: 3,
-              py: 1.5,
-            }}
+            sx={{ px: 3, py: 1.5 }}
           >
-            Explore Subjects
+            Explorar Áreas de Estudo
           </Button>
+
           <Button
             variant="outlined"
-            href="mailto:your@email.com"
-            sx={{
-              px: 3,
-              py: 1.5,
-            }}
+            href={`mailto:${email}`}
+            sx={{ px: 3, py: 1.5 }}
           >
-            Get in Touch
+            Contato Acadêmico
           </Button>
         </Stack>
       </Stack>

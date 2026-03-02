@@ -15,74 +15,86 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 export function Header() {
   const location = useLocation();
   const isHome = location.pathname === '/';
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // ENV CONFIG
+  const appName = import.meta.env.VITE_APP_NAME;
+  const githubUrl = import.meta.env.VITE_GITHUB_URL;
+  const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL;
+  const email = import.meta.env.VITE_USER_EMAIL;
+
+  const socialLinks = [
+    { href: githubUrl, icon: Github, label: 'GitHub' },
+    { href: linkedinUrl, icon: Linkedin, label: 'LinkedIn' },
+    { href: `mailto:${email}`, icon: Mail, label: 'Email' },
+  ].filter(link => link.href);
 
   const scrollToSection = (sectionId: string) => {
     setMobileMenuOpen(false);
-    
+
     if (!isHome) {
-      window.location.href = `/#${sectionId}`;
+      window.location.assign(`/#${sectionId}`);
       return;
     }
-    
+
     const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    element?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const navItems = [
-    { label: 'About', id: 'about' },
-    { label: 'Skills', id: 'skills' },
-    { label: 'Subjects', id: 'subjects' },
-  ];
-
-  const socialLinks = [
-    { href: 'https://github.com', icon: Github, label: 'GitHub' },
-    { href: 'https://linkedin.com', icon: Linkedin, label: 'LinkedIn' },
-    { href: 'mailto:your@email.com', icon: Mail, label: 'Email' },
+    { label: 'Sobre', id: 'about' },
+    { label: 'Disciplinas', id: 'subjects' },
   ];
 
   return (
-    <AppBar position="sticky" sx={{ 
-      backgroundColor: theme.palette.background.paper,
-      borderBottom: `1px solid ${theme.palette.divider}`,
-      backdropFilter: 'blur(4px)',
-    }}>
-      <Toolbar sx={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        backgroundColor: theme.palette.background.paper,
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        backdropFilter: 'blur(8px)',
+      }}
+    >
+      <Toolbar sx={{ maxWidth: '1200px', mx: 'auto', width: '100%' }}>
+
+        {/* Logo */}
         <Link
           component={RouterLink}
           to="/"
+          underline="none"
+          onClick={() => setMobileMenuOpen(false)}
           sx={{
             display: 'flex',
             alignItems: 'center',
             gap: 1,
-            textDecoration: 'none',
             color: theme.palette.primary.main,
+            fontWeight: 600,
+            letterSpacing: 0.5,
             flex: 1,
-            opacity: 0.8,
+            opacity: 0.85,
             transition: 'opacity 0.2s',
             '&:hover': { opacity: 1 },
           }}
-          onClick={() => setMobileMenuOpen(false)}
         >
           <Terminal size={20} />
-          <Box sx={{ fontWeight: 600, color: theme.palette.primary.main }}>yourname.dev</Box>
+          {appName}
         </Link>
 
         {/* Desktop Navigation */}
         {!isMobile && (
           <Stack direction="row" spacing={3} sx={{ flex: 1, justifyContent: 'center' }}>
-            {navItems.map((item) => (
+            {navItems.map(item => (
               <Button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
                 sx={{
                   color: theme.palette.text.secondary,
                   textTransform: 'none',
-                  fontSize: '1rem',
+                  fontSize: '0.95rem',
                   '&:hover': {
                     color: theme.palette.primary.main,
                   },
@@ -94,63 +106,68 @@ export function Header() {
           </Stack>
         )}
 
-        {/* Desktop Social Links */}
+        {/* Desktop Social */}
         {!isMobile && (
-          <Stack direction="row" spacing={2}>
-            {socialLinks.map((social) => (
+          <Stack direction="row" spacing={1}>
+            {socialLinks.map(({ href, icon: Icon, label }) => (
               <IconButton
-                key={social.label}
+                key={label}
                 component="a"
-                href={social.href}
+                href={href}
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener noreferrer external"
+                aria-label={label}
                 size="small"
-                sx={{ color: theme.palette.text.secondary }}
+                sx={{
+                  color: theme.palette.text.secondary,
+                  transition: 'color 0.2s',
+                  '&:hover': {
+                    color: theme.palette.primary.main,
+                  },
+                }}
               >
-                <social.icon size={20} />
+                <Icon size={18} />
               </IconButton>
             ))}
           </Stack>
         )}
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Toggle */}
         {isMobile && (
           <IconButton
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => setMobileMenuOpen(prev => !prev)}
             sx={{ color: theme.palette.text.secondary }}
+            aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </IconButton>
         )}
       </Toolbar>
 
-      {/* Mobile Menu */}
+      {/* Mobile Drawer */}
       <Drawer
         anchor="top"
         open={mobileMenuOpen && isMobile}
         onClose={() => setMobileMenuOpen(false)}
+        ModalProps={{ keepMounted: true }}
         sx={{
           '& .MuiDrawer-paper': {
-            marginTop: '64px',
+            mt: '64px',
             backgroundColor: theme.palette.background.paper,
             borderBottom: `1px solid ${theme.palette.divider}`,
           },
         }}
       >
-        <Box sx={{ p: 2 }}>
-          <Stack spacing={2} sx={{ mb: 2 }}>
-            {navItems.map((item) => (
+        <Box sx={{ p: 3 }}>
+          <Stack spacing={2}>
+            {navItems.map(item => (
               <Button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
                 sx={{
-                  color: theme.palette.text.secondary,
-                  textTransform: 'none',
-                  fontSize: '1rem',
                   justifyContent: 'flex-start',
-                  '&:hover': {
-                    color: theme.palette.primary.main,
-                  },
+                  textTransform: 'none',
+                  color: theme.palette.text.secondary,
                 }}
               >
                 {item.label}
@@ -158,23 +175,20 @@ export function Header() {
             ))}
           </Stack>
 
-          <Box sx={{ borderTop: `1px solid ${theme.palette.divider}`, pt: 2 }}>
-            <Stack direction="row" spacing={2}>
-              {socialLinks.map((social) => (
-                <IconButton
-                  key={social.label}
-                  component="a"
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  size="small"
-                  sx={{ color: theme.palette.text.secondary }}
-                >
-                  <social.icon size={20} />
-                </IconButton>
-              ))}
-            </Stack>
-          </Box>
+          <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
+            {socialLinks.map(({ href, icon: Icon, label }) => (
+              <IconButton
+                key={label}
+                component="a"
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer external"
+                aria-label={label}
+              >
+                <Icon size={18} />
+              </IconButton>
+            ))}
+          </Stack>
         </Box>
       </Drawer>
     </AppBar>

@@ -1,4 +1,4 @@
-import { Heart, Terminal } from 'lucide-react';
+import { Terminal } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
@@ -7,6 +7,8 @@ import { useTheme } from '@mui/material/styles';
 
 export function Footer() {
   const theme = useTheme();
+  const year = new Date().getFullYear();
+  const appName = import.meta.env.VITE_APP_NAME;
 
   return (
     <Box
@@ -17,10 +19,10 @@ export function Footer() {
         mt: 'auto',
       }}
     >
-      <Container maxWidth="md" sx={{ py: { xs: 3, sm: 6 } }}>
+      <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 } }}>
         <Stack
           direction={{ xs: 'column', md: 'row' }}
-          spacing={2}
+          spacing={1}
           sx={{
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -29,29 +31,26 @@ export function Footer() {
         >
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Terminal size={16} />
-            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-              yourname.dev
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.secondary,
+                fontWeight: 500,
+                letterSpacing: 0.5,
+              }}
+            >
+              {appName}
             </Typography>
           </Stack>
 
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ alignItems: 'center', color: theme.palette.text.secondary }}
+          <Typography
+            variant="caption"
+            sx={{
+              color: theme.palette.text.secondary,
+              opacity: 0.8,
+            }}
           >
-            <Typography variant="body2">Built with</Typography>
-            <Heart
-              size={16}
-              style={{
-                fill: theme.palette.secondary.main,
-                color: theme.palette.secondary.main,
-              }}
-            />
-            <Typography variant="body2">and lots of coffee</Typography>
-          </Stack>
-
-          <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-            © 2025 All rights reserved
+            © {year} Alguns direitos reservados · CC BY-NC 4.0
           </Typography>
         </Stack>
       </Container>
