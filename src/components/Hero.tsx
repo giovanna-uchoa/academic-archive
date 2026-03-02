@@ -76,7 +76,7 @@ export function Hero() {
             startIcon={<Code2 size={18} />}
             sx={{ px: 3, py: 1.5 }}
           >
-            Explorar Áreas de Estudo
+            Explorar
           </Button>
 
           <Button

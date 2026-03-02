@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
 import { SubjectPage } from './pages/SubjectPage';
+import { AdminPage } from './pages/admin/AdminPage';
 
 export default function App() {
   const theme = useTheme();
@@ -24,6 +25,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/subject/:subjectId" element={<SubjectPage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </Box>
         <Footer />

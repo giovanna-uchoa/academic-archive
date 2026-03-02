@@ -1,25 +1,21 @@
 import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/material/styles';
-import { blogPosts } from '../data/blogPosts';
+import type { Post } from '../types/content';
+import { renderRichContent } from '../utils/renderContent';
 
 interface BlogPostProps {
-  postId: number;
+  post: Post;
+  subjectTitle?: string;
   onBack: () => void;
 }
 
-export function BlogPost({ postId, onBack }: BlogPostProps) {
-  const post = blogPosts.find(p => p.id === postId);
+export function BlogPost({ post, subjectTitle, onBack }: BlogPostProps) {
   const theme = useTheme();
-
-  if (!post) {
-    return null;
-  }
 
   return (
     <Box
@@ -49,7 +45,7 @@ export function BlogPost({ postId, onBack }: BlogPostProps) {
       <Stack spacing={{ xs: 2, sm: 3 }}>
         <Box>
           <Chip
-            label={post.category}
+            label={subjectTitle || post.subjectId}
             size="small"
             sx={{
               backgroundColor: theme.palette.mode === 'light' ? '#f4ede4' : '#3d2f26',
@@ -79,7 +75,7 @@ export function BlogPost({ postId, onBack }: BlogPostProps) {
             <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
               <Clock size={16} />
               <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                {post.readTime}
+                {post.timeSpent}
               </Typography>
             </Stack>
           </Stack>
@@ -149,7 +145,7 @@ export function BlogPost({ postId, onBack }: BlogPostProps) {
               },
             },
           }}
-          dangerouslySetInnerHTML={{ __html: post.content }}
+          dangerouslySetInnerHTML={{ __html: renderRichContent(post.content) }}
         />
       </Stack>
     </Box>

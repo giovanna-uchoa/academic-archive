@@ -8,13 +8,15 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/material/styles';
-import { blogPosts } from '../data/blogPosts';
+import type { Post } from '../types/content';
 
 interface BlogListProps {
+  posts: Post[];
+  subjectTitles: Record<string, string>;
   onSelectPost: (id: number) => void;
 }
 
-export function BlogList({ onSelectPost }: BlogListProps) {
+export function BlogList({ posts, subjectTitles, onSelectPost }: BlogListProps) {
   const theme = useTheme();
 
   return (
@@ -39,7 +41,7 @@ export function BlogList({ onSelectPost }: BlogListProps) {
       </Box>
 
       <Stack spacing={2}>
-        {blogPosts.map((post) => (
+        {posts.map((post) => (
           <Card
             key={post.id}
             component={CardActionArea}
@@ -62,7 +64,7 @@ export function BlogList({ onSelectPost }: BlogListProps) {
                     </Typography>
                   </Stack>
                   <Chip
-                    label={post.category}
+                    label={subjectTitles[post.subjectId] || post.subjectId}
                     size="small"
                     sx={{
                       backgroundColor: theme.palette.mode === 'light' ? '#f4ede4' : '#3d2f26',

@@ -173,6 +173,18 @@ export function Header() {
                 {item.label}
               </Button>
             ))}
+            <Button
+              component={RouterLink}
+              to="/admin"
+              onClick={() => setMobileMenuOpen(false)}
+              sx={{
+                justifyContent: 'flex-start',
+                textTransform: 'none',
+                color: theme.palette.text.secondary,
+              }}
+            >
+              Admin
+            </Button>
           </Stack>
 
           <Stack direction="row" spacing={1} sx={{ mt: 3 }}>

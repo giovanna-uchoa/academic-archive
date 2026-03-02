@@ -10,19 +10,36 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/material/styles';
-import { getSubjectById } from '../data/subjects';
-import { blogPosts } from '../data/blogPosts';
-import { getCategoryIdFromName } from '../data/subjects';
+import { useCmsContent } from '../utils/useCmsContent';
 import { BlogPost } from '../components/BlogPost';
+import { renderRichContent } from '../utils/renderContent';
 
 export function SubjectPage() {
   const { subjectId } = useParams<{ subjectId: string }>();
   const navigate = useNavigate();
   const [selectedPost, setSelectedPost] = useState<number | null>(null);
   const theme = useTheme();
+  const { subjects, posts, loading, error } = useCmsContent();
 
-  const subject = getSubjectById(subjectId || '');
+  const subject = subjects.find(item => item.id === (subjectId || ''));
+
+  if (loading) {
+    return (
+      <Box component="main" sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box component="main" sx={{ maxWidth: '56rem', mx: 'auto', px: { xs: 2, sm: 3 }, py: 6 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
 
   if (!subject) {
     return (
@@ -60,12 +77,12 @@ export function SubjectPage() {
   }
 
   // Filter blog posts for this subject
-  const subjectPosts = blogPosts.filter(
-    post => getCategoryIdFromName(post.category) === subject.id
-  );
+  const subjectPosts = posts.filter(post => post.subjectId === subject.id);
 
-  if (selectedPost !== null) {
-    return <BlogPost postId={selectedPost} onBack={() => setSelectedPost(null)} />;
+  const selectedPostData = subjectPosts.find(post => post.id === selectedPost) || null;
+
+  if (selectedPostData) {
+    return <BlogPost post={selectedPostData} subjectTitle={subject.title} onBack={() => setSelectedPost(null)} />;
   }
 
   return (
@@ -153,7 +170,7 @@ export function SubjectPage() {
             color: theme.palette.primary.main,
           },
         }}
-        dangerouslySetInnerHTML={{ __html: subject.overview }}
+        dangerouslySetInnerHTML={{ __html: renderRichContent(subject.overview) }}
       />
 
       {/* Blog Posts Section */}
@@ -239,7 +256,7 @@ export function SubjectPage() {
                       <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
                         <Clock size={16} />
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                          {post.readTime}
+                          {post.timeSpent}
                         </Typography>
                       </Stack>
                       <Typography
