@@ -8,13 +8,11 @@ import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import { cmsApi } from '../../utils/cmsApi';
-import type { Post, Subject } from '../../types/content';
+import type { Post, Subject } from '../../utils/dataTypes';
 
 interface PostSectionProps {
   posts: Post[];
   subjects: Subject[];
-  token: string;
-  requireToken: () => boolean;
   reload: () => Promise<void>;
   setStatus: (status: string | null) => void;
   setStatusType: (type: 'success' | 'error') => void;
@@ -29,7 +27,7 @@ const EMPTY_POST = {
   subjectId: '',
 };
 
-export function PostSection({ posts, subjects, token, requireToken, reload, setStatus, setStatusType}: PostSectionProps) {
+export function PostSection({ posts, subjects, reload, setStatus, setStatusType}: PostSectionProps) {
   const [postForm, setPostForm] = useState(EMPTY_POST);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
 
@@ -45,17 +43,13 @@ export function PostSection({ posts, subjects, token, requireToken, reload, setS
     event.preventDefault();
     clearStatus();
 
-    if (!requireToken()) {
-      return;
-    }
-
     try {
       if (editingPostId) {
-        await cmsApi.updatePost(token, editingPostId, postForm);
+        await cmsApi.updatePost(editingPostId, postForm);
         setStatusType('success');
         setStatus(`Post "${postForm.title}" updated.`);
       } else {
-        await cmsApi.createPost(token, postForm);
+        await cmsApi.createPost(postForm);
         setStatusType('success');
         setStatus(`Post "${postForm.title}" created.`);
       }
@@ -85,12 +79,8 @@ export function PostSection({ posts, subjects, token, requireToken, reload, setS
   const handleDeletePost = async (postId: number) => {
     clearStatus();
 
-    if (!requireToken()) {
-      return;
-    }
-
     try {
-      await cmsApi.deletePost(token, postId);
+      await cmsApi.deletePost(postId);
       setStatusType('success');
       setStatus('Post deleted.');
 

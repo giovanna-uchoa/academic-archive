@@ -1,77 +1,136 @@
-import type { Post, Subject } from '../types/content';
+import type { Post, Subject } from './dataTypes'
+import { supabase } from './supabaseClient'
 
-const API_BASE = '/api';
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers || {}),
-    },
-    ...init,
-  });
-
-  if (!response.ok) {
-    let message = 'Request failed';
-    try {
-      const payload = await response.json();
-      if (payload?.message) {
-        message = payload.message;
-      }
-    } catch {
-      // ignore invalid body
-    }
-
-    throw new Error(message);
+async function ensureAuthenticated() {
+  const { data } = await supabase.auth.getUser()
+  if (!data.user) {
+    throw new Error('Not authenticated')
   }
-
-  return response.json() as Promise<T>;
+  return data.user
 }
 
 export const cmsApi = {
-  listSubjects: () => request<Subject[]>('/subjects'),
-  listPosts: () => request<Post[]>('/posts'),
+  // =========================
+  // READ (public)
+  // =========================
 
-  createSubject: (token: string, subject: Subject) =>
-    request<Subject>('/subjects', {
-      method: 'POST',
-      headers: { 'x-admin-token': token },
-      body: JSON.stringify(subject),
-    }),
+  async listSubjects(): Promise<Subject[]> {
+    const { data, error } = await supabase
+      .from('subjects')
+      .select('*')
+      .order('created_at', { ascending: true })
 
-  updateSubject: (token: string, subjectId: string, subject: Subject) =>
-    request<Subject>(`/subjects/${subjectId}`, {
-      method: 'PUT',
-      headers: { 'x-admin-token': token },
-      body: JSON.stringify(subject),
-    }),
+    if (error) throw new Error(error.message)
+    return data ?? []
+  },
 
-  deleteSubject: (token: string, subjectId: string) =>
-    request<{ ok: boolean }>(`/subjects/${subjectId}`, {
-      method: 'DELETE',
-      headers: { 'x-admin-token': token },
-    }),
+  async listPosts(): Promise<Post[]> {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('id', { ascending: true })
 
-  createPost: (
-    token: string,
+    if (error) throw new Error(error.message)
+    return data ?? []
+  },
+
+  // =========================
+  // SUBJECTS (admin only)
+  // =========================
+
+  async createSubject(subject: Subject): Promise<Subject> {
+    await ensureAuthenticated()
+
+    const { data, error } = await supabase
+      .from('subjects')
+      .insert(subject)
+      .select()
+      .single()
+
+    if (error) throw new Error(error.message)
+    return data
+  },
+
+  async updateSubject(
+    subjectId: string,
+    subject: Omit<Subject, 'id'>
+  ): Promise<Subject> {
+    await ensureAuthenticated()
+
+    const { data, error } = await supabase
+      .from('subjects')
+      .update(subject)
+      .eq('id', subjectId)
+      .select()
+      .single()
+
+    if (error) throw new Error(error.message)
+    return data
+  },
+
+  async deleteSubject(
+    subjectId: string
+  ): Promise<{ ok: boolean }> {
+    await ensureAuthenticated()
+
+    const { error } = await supabase
+      .from('subjects')
+      .delete()
+      .eq('id', subjectId)
+
+    if (error) throw new Error(error.message)
+
+    return { ok: true }
+  },
+
+  // =========================
+  // POSTS (admin only)
+  // =========================
+
+  async createPost(
     post: Omit<Post, 'id'>
-  ) =>
-    request<Post>('/posts', {
-      method: 'POST',
-      headers: { 'x-admin-token': token },
-      body: JSON.stringify(post),
-    }),
+  ): Promise<Post> {
+    await ensureAuthenticated()
 
-  updatePost: (token: string, postId: number, post: Omit<Post, 'id'>) =>
-    request<Post>(`/posts/${postId}`, {
-      method: 'PUT',
-      headers: { 'x-admin-token': token },
-      body: JSON.stringify(post),
-    }),
+    const { data, error } = await supabase
+      .from('posts')
+      .insert(post)
+      .select()
+      .single()
 
-  deletePost: (token: string, postId: number) =>
-    request<{ ok: boolean }>(`/posts/${postId}`, {
-      method: 'DELETE',
-      headers: { 'x-admin-token': token },
-    }),
-};
+    if (error) throw new Error(error.message)
+    return data
+  },
+
+  async updatePost(
+    postId: number,
+    post: Omit<Post, 'id'>
+  ): Promise<Post> {
+    await ensureAuthenticated()
+
+    const { data, error } = await supabase
+      .from('posts')
+      .update(post)
+      .eq('id', postId)
+      .select()
+      .single()
+
+    if (error) throw new Error(error.message)
+    return data
+  },
+
+  async deletePost(
+    postId: number
+  ): Promise<{ ok: boolean }> {
+    await ensureAuthenticated()
+
+    const { error } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', postId)
+
+    if (error) throw new Error(error.message)
+
+    return { ok: true }
+  }
+}

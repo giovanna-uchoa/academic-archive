@@ -1,4 +1,5 @@
 import { Code2 } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -7,14 +8,30 @@ import { useTheme } from '@mui/material/styles';
 
 export function Hero() {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const email = import.meta.env.VITE_USER_EMAIL;
+  const isHome = location.pathname === '/';
+
+  const handleScrollToSubjects = () => {
+    if (!isHome) {
+      navigate('/');
+      setTimeout(() => {
+        document.getElementById('subjects')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return;
+    }
+
+    document.getElementById('subjects')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <Box
       component="section"
       id="about"
       sx={{
-        maxWidth: '1200px',
+        maxWidth: 1200,
         mx: 'auto',
         px: { xs: 2, sm: 3 },
         py: { xs: 6, sm: 8, md: 10 },
@@ -28,26 +45,15 @@ export function Hero() {
             fontSize: { xs: '1.875rem', sm: '2.25rem', md: '3rem' },
           }}
         >
-          <Box
-            component="span"
-            sx={{ color: theme.palette.secondary.main }}
-          >
+          <Box component="span" sx={{ color: theme.palette.secondary.main }}>
             Repositório Acadêmico
           </Box>
         </Typography>
 
-        <Typography
-          variant="body1"
-          sx={{
-            maxWidth: '42rem',
-            lineHeight: 1.7,
-          }}
-        >
+        <Typography variant="body1" sx={{ maxWidth: '42rem', lineHeight: 1.7 }}>
           Esta plataforma funciona como um repositório estruturado das minhas
           atividades acadêmicas, estudos técnicos e projetos desenvolvidos no
-          contexto do Bacharelado em Ciência da Computação. Aqui registro o
-          progresso de disciplinas, experimentos práticos, contribuições em
-          software livre e atividades de pesquisa realizadas ao longo do curso.
+          contexto do Bacharelado em Ciência da Computação.
         </Typography>
 
         <Typography
@@ -60,9 +66,7 @@ export function Hero() {
         >
           O objetivo é manter um acompanhamento público e organizado do
           desenvolvimento dos projetos, documentando metodologias adotadas,
-          decisões técnicas, resultados obtidos e reflexões sobre o processo
-          de aprendizagem — consolidando este espaço como um portfólio e como
-          uma base de conhecimento em constante evolução.
+          decisões técnicas e reflexões sobre o processo de aprendizagem.
         </Typography>
 
         <Stack
@@ -72,7 +76,7 @@ export function Hero() {
         >
           <Button
             variant="contained"
-            href="#subjects"
+            onClick={handleScrollToSubjects}
             startIcon={<Code2 size={18} />}
             sx={{ px: 3, py: 1.5 }}
           >
@@ -81,7 +85,8 @@ export function Hero() {
 
           <Button
             variant="outlined"
-            href={`mailto:${email}`}
+            component="a"
+            href={email ? `mailto:${email}` : undefined}
             sx={{ px: 3, py: 1.5 }}
           >
             Contato Acadêmico

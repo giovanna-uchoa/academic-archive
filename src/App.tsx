@@ -1,17 +1,19 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
-import { Header } from './components/Header';
-import { Footer } from './components/Footer';
-import { HomePage } from './pages/HomePage';
-import { SubjectPage } from './pages/SubjectPage';
-import { AdminPage } from './pages/admin/AdminPage';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+
+const HomePage = lazy(() => import('@/pages/HomePage'));
+const SubjectPage = lazy(() => import('@/pages/SubjectPage'));
+const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
 
 export default function App() {
   const theme = useTheme();
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Box 
         sx={{
           minHeight: '100vh',
@@ -22,14 +24,16 @@ export default function App() {
       >
         <Header />
         <Box component="main" sx={{ flex: 1 }}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/subject/:subjectId" element={<SubjectPage />} />
-            <Route path="/admin" element={<AdminPage />} />
-          </Routes>
+          <Suspense fallback={<div>Carregando...</div>}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/subject/:subjectId" element={<SubjectPage />} />
+              <Route path="/admin" element={<AdminPage />} />
+            </Routes>
+          </Suspense>
         </Box>
         <Footer />
       </Box>
-    </BrowserRouter>
+    </HashRouter>
   );
 }

@@ -1,7 +1,7 @@
 import { Hero } from '../components/Hero';
 import { SubjectsOverview } from '../components/SubjectsOverview';
 
-export function HomePage() {
+function HomePage() {
   return (
     <main>
       <Hero />
@@ -9,3 +9,5 @@ export function HomePage() {
     </main>
   );
 }
+
+export default HomePage;

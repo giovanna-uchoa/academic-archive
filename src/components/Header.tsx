@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Terminal, Github, Linkedin, Mail, Menu, X } from 'lucide-react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
@@ -14,40 +14,67 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 
 export function Header() {
   const location = useLocation();
-  const isHome = location.pathname === '/';
-
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isHome = location.pathname === '/';
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // ENV CONFIG
-  const appName = import.meta.env.VITE_APP_NAME;
+  // ======================
+  // ENV CONFIG (safe)
+  // ======================
+  const appName = import.meta.env.VITE_APP_NAME ?? 'App';
   const githubUrl = import.meta.env.VITE_GITHUB_URL;
   const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL;
   const email = import.meta.env.VITE_USER_EMAIL;
 
-  const socialLinks = [
-    { href: githubUrl, icon: Github, label: 'GitHub' },
-    { href: linkedinUrl, icon: Linkedin, label: 'LinkedIn' },
-    { href: `mailto:${email}`, icon: Mail, label: 'Email' },
-  ].filter(link => link.href);
+  // ======================
+  // NAV ITEMS
+  // ======================
+  const navItems = useMemo(
+    () => [
+      { label: 'Sobre', id: 'about' },
+      { label: 'Disciplinas', id: 'subjects' },
+    ],
+    []
+  );
 
+  // ======================
+  // SOCIAL LINKS
+  // ======================
+  const socialLinks = useMemo(
+    () =>
+      [
+        { href: githubUrl, icon: Github, label: 'GitHub' },
+        { href: linkedinUrl, icon: Linkedin, label: 'LinkedIn' },
+        { href: email ? `mailto:${email}` : undefined, icon: Mail, label: 'Email' },
+      ].filter(link => link.href),
+    [githubUrl, linkedinUrl, email]
+  );
+
+  const handleCloseMenu = () => setMobileMenuOpen(false);
+
+  // ======================
+  // SCROLL HANDLER
+  // ======================
   const scrollToSection = (sectionId: string) => {
-    setMobileMenuOpen(false);
+    handleCloseMenu();
 
     if (!isHome) {
-      window.location.assign(`/#${sectionId}`);
+      navigate('/', { replace: false });
+      
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        element?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+
       return;
     }
 
     const element = document.getElementById(sectionId);
     element?.scrollIntoView({ behavior: 'smooth' });
   };
-
-  const navItems = [
-    { label: 'Sobre', id: 'about' },
-    { label: 'Disciplinas', id: 'subjects' },
-  ];
 
   return (
     <AppBar
@@ -59,22 +86,21 @@ export function Header() {
         backdropFilter: 'blur(8px)',
       }}
     >
-      <Toolbar sx={{ maxWidth: '1200px', mx: 'auto', width: '100%' }}>
-
+      <Toolbar sx={{ maxWidth: 1200, mx: 'auto', width: '100%' }}>
         {/* Logo */}
         <Link
           component={RouterLink}
           to="/"
           underline="none"
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={handleCloseMenu}
           sx={{
             display: 'flex',
             alignItems: 'center',
             gap: 1,
-            color: theme.palette.primary.main,
+            flex: 1,
             fontWeight: 600,
             letterSpacing: 0.5,
-            flex: 1,
+            color: theme.palette.primary.main,
             opacity: 0.85,
             transition: 'opacity 0.2s',
             '&:hover': { opacity: 1 },
@@ -92,12 +118,10 @@ export function Header() {
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
                 sx={{
-                  color: theme.palette.text.secondary,
                   textTransform: 'none',
                   fontSize: '0.95rem',
-                  '&:hover': {
-                    color: theme.palette.primary.main,
-                  },
+                  color: theme.palette.text.secondary,
+                  '&:hover': { color: theme.palette.primary.main },
                 }}
               >
                 {item.label}
@@ -120,10 +144,7 @@ export function Header() {
                 size="small"
                 sx={{
                   color: theme.palette.text.secondary,
-                  transition: 'color 0.2s',
-                  '&:hover': {
-                    color: theme.palette.primary.main,
-                  },
+                  '&:hover': { color: theme.palette.primary.main },
                 }}
               >
                 <Icon size={18} />
@@ -136,8 +157,8 @@ export function Header() {
         {isMobile && (
           <IconButton
             onClick={() => setMobileMenuOpen(prev => !prev)}
-            sx={{ color: theme.palette.text.secondary }}
             aria-label="Toggle menu"
+            sx={{ color: theme.palette.text.secondary }}
           >
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </IconButton>
@@ -148,7 +169,7 @@ export function Header() {
       <Drawer
         anchor="top"
         open={mobileMenuOpen && isMobile}
-        onClose={() => setMobileMenuOpen(false)}
+        onClose={handleCloseMenu}
         ModalProps={{ keepMounted: true }}
         sx={{
           '& .MuiDrawer-paper': {
@@ -173,10 +194,11 @@ export function Header() {
                 {item.label}
               </Button>
             ))}
+
             <Button
               component={RouterLink}
               to="/admin"
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={handleCloseMenu}
               sx={{
                 justifyContent: 'flex-start',
                 textTransform: 'none',

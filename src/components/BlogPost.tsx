@@ -5,7 +5,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/material/styles';
-import type { Post } from '../types/content';
+import type { Post } from '../utils/dataTypes';
 import { renderRichContent } from '../utils/renderContent';
 
 interface BlogPostProps {

@@ -1,35 +1,63 @@
-import { useCallback, useEffect, useState } from 'react';
-import { cmsApi } from './cmsApi';
-import type { Post, Subject } from '../types/content';
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { cmsApi } from './cmsApi'
+import { supabase } from './supabaseClient'
+import type { Post, Subject } from './dataTypes'
 
 export function useCmsContent() {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [subjects, setSubjects] = useState<Subject[]>([])
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadingRef = useRef(false)
 
   const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    if (loadingRef.current) return
+
+    loadingRef.current = true
+    setLoading(true)
+    setError(null)
 
     try {
       const [nextSubjects, nextPosts] = await Promise.all([
         cmsApi.listSubjects(),
         cmsApi.listPosts(),
-      ]);
+      ])
 
-      setSubjects(nextSubjects);
-      setPosts(nextPosts);
+      setSubjects(nextSubjects)
+      setPosts(nextPosts)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load content');
+      setError(
+        err instanceof Error ? err.message : 'Failed to load content'
+      )
     } finally {
-      setLoading(false);
+      loadingRef.current = false
+      setLoading(false)
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    void reload()
+  }, [])
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('posts-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'posts' },
+        () => {
+          setTimeout(() => {
+            void reload()
+          }, 100)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   return {
     subjects,
@@ -37,5 +65,5 @@ export function useCmsContent() {
     loading,
     error,
     reload,
-  };
+  }
 }

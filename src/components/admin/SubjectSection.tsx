@@ -7,12 +7,10 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import { cmsApi } from '../../utils/cmsApi';
-import type { Subject } from '../../types/content';
+import type { Subject } from '../../utils/dataTypes';
 
 interface SubjectSectionProps {
   subjects: Subject[];
-  token: string;
-  requireToken: () => boolean;
   reload: () => Promise<void>;
   setStatus: (status: string | null) => void;
   setStatusType: (type: 'success' | 'error') => void;
@@ -26,7 +24,7 @@ const EMPTY_SUBJECT: Subject = {
   icon: '',
 };
 
-export function SubjectSection({ subjects, token, requireToken, reload, setStatus, setStatusType}: SubjectSectionProps) {
+export function SubjectSection({ subjects, reload, setStatus, setStatusType}: SubjectSectionProps) {
   const [subjectForm, setSubjectForm] = useState<Subject>(EMPTY_SUBJECT);
   const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null);
 
@@ -38,17 +36,13 @@ export function SubjectSection({ subjects, token, requireToken, reload, setStatu
     event.preventDefault();
     clearStatus();
 
-    if (!requireToken()) {
-      return;
-    }
-
     try {
       if (editingSubjectId) {
-        await cmsApi.updateSubject(token, editingSubjectId, subjectForm);
+        await cmsApi.updateSubject(editingSubjectId, subjectForm);
         setStatusType('success');
         setStatus(`Subject "${subjectForm.title}" updated.`);
       } else {
-        await cmsApi.createSubject(token, subjectForm);
+        await cmsApi.createSubject(subjectForm);
         setStatusType('success');
         setStatus(`Subject "${subjectForm.title}" created.`);
       }
@@ -71,12 +65,8 @@ export function SubjectSection({ subjects, token, requireToken, reload, setStatu
   const handleDeleteSubject = async (subjectId: string) => {
     clearStatus();
 
-    if (!requireToken()) {
-      return;
-    }
-
     try {
-      await cmsApi.deleteSubject(token, subjectId);
+      await cmsApi.deleteSubject(subjectId);
       setStatusType('success');
       setStatus('Subject deleted. Associated posts were also removed.');
 
@@ -104,6 +94,9 @@ export function SubjectSection({ subjects, token, requireToken, reload, setStatu
               onChange={event =>
                 setSubjectForm(prev => ({ ...prev, id: event.target.value }))
               }
+              InputProps={{
+                readOnly: !!editingSubjectId,
+              }}
               required
             />
             <TextField

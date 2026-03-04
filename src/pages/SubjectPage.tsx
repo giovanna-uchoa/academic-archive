@@ -2,7 +2,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { ArrowLeft, BookOpen, Clock } from 'lucide-react';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
@@ -16,7 +15,7 @@ import { useCmsContent } from '../utils/useCmsContent';
 import { BlogPost } from '../components/BlogPost';
 import { renderRichContent } from '../utils/renderContent';
 
-export function SubjectPage() {
+function SubjectPage() {
   const { subjectId } = useParams<{ subjectId: string }>();
   const navigate = useNavigate();
   const [selectedPost, setSelectedPost] = useState<number | null>(null);
@@ -278,3 +277,5 @@ export function SubjectPage() {
     </Box>
   );
 }
+
+export default SubjectPage;
