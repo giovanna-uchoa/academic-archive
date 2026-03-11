@@ -1,6 +1,5 @@
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
@@ -8,7 +7,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/material/styles';
-import type { Post } from '../types/content';
+import type { Post } from '@/utils/dataTypes';
 
 interface BlogListProps {
   posts: Post[];
@@ -33,10 +32,10 @@ export function BlogList({ posts, subjectTitles, onSelectPost }: BlogListProps) 
     >
       <Box sx={{ mb: { xs: 3, sm: 4 } }}>
         <Typography variant="h2" sx={{ mb: 1 }}>
-          Recent Posts
+          Posts Recentes
         </Typography>
         <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
-          Things I've been learning, testing, and building
+          Coisas que estou aprendendo, testando, e construindo
         </Typography>
       </Box>
 
@@ -57,12 +56,14 @@ export function BlogList({ posts, subjectTitles, onSelectPost }: BlogListProps) 
                       {post.date}
                     </Typography>
                   </Stack>
-                  <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-                    <Clock size={16} />
-                    <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                      {post.readTime}
-                    </Typography>
-                  </Stack>
+                  { post.timeSpent &&
+                    <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+                      <Clock size={16} />
+                      <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                        {post.timeSpent}
+                      </Typography>
+                    </Stack>
+                  }
                   <Chip
                     label={subjectTitles[post.subjectId] || post.subjectId}
                     size="small"
@@ -101,7 +102,7 @@ export function BlogList({ posts, subjectTitles, onSelectPost }: BlogListProps) 
                     variant="caption"
                     sx={{ color: theme.palette.secondary.main }}
                   >
-                    Read more
+                    Abrir
                   </Typography>
                   <ArrowRight size={16} />
                 </Stack>

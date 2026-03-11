@@ -89,7 +89,7 @@ export function SubjectCard({
                   variant="caption"
                   sx={{ color: theme.palette.text.secondary }}
                 >
-                  {postCount} {postCount === 1 ? 'article' : 'articles'}
+                  {postCount} {postCount === 1 ? 'registro' : 'registros'}
                 </Typography>
               </Stack>
 
@@ -103,7 +103,7 @@ export function SubjectCard({
                   '&:hover': { gap: 1 },
                 }}
               >
-                <Typography variant="caption">Explore</Typography>
+                <Typography variant="caption">Explorar</Typography>
                 <ArrowRight size={16} />
               </Stack>
             </Stack>

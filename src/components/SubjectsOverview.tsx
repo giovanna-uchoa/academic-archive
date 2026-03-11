@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
-import { useCmsContent } from '../utils/useCmsContent';
+import { useCmsContent } from '@/utils/useCmsContent';
 import { SubjectCard } from './SubjectCard';
 
 export function SubjectsOverview() {

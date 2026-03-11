@@ -5,8 +5,8 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/material/styles';
-import type { Post } from '../utils/dataTypes';
-import { renderRichContent } from '../utils/renderContent';
+import type { Post } from '@/utils/dataTypes';
+import { renderRichContent } from '@/utils/renderContent';
 
 interface BlogPostProps {
   post: Post;
@@ -72,12 +72,15 @@ export function BlogPost({ post, subjectTitle, onBack }: BlogPostProps) {
                 {post.date}
               </Typography>
             </Stack>
-            <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-              <Clock size={16} />
-              <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                {post.timeSpent}
-              </Typography>
-            </Stack>
+            {
+              post.timeSpent &&
+              <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+                <Clock size={16} />
+                <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                  {post.timeSpent}
+                </Typography>
+              </Stack>
+            }
           </Stack>
         </Box>
 

@@ -59,7 +59,7 @@ function SubjectPage() {
               color: theme.palette.primary.main,
             }}
           >
-            Subject Not Found
+            Tópico não encontrado
           </Typography>
           <Button
             startIcon={<ArrowLeft size={18} />}
@@ -68,7 +68,7 @@ function SubjectPage() {
               color: theme.palette.text.secondary,
             }}
           >
-            Back to Home
+            Voltar para Home
           </Button>
         </Box>
       </Box>
@@ -107,7 +107,7 @@ function SubjectPage() {
           },
         }}
       >
-        Back to Home
+        Voltar para Home
       </Button>
 
       {/* Subject Header */}
@@ -185,7 +185,7 @@ function SubjectPage() {
           }}
         >
           <BookOpen size={24} />
-          Articles & Experiments
+          Artigos & Experimentos
         </Typography>
 
         {subjectPosts.length === 0 ? (
@@ -196,7 +196,7 @@ function SubjectPage() {
               py: 6,
             }}
           >
-            No articles yet. Check back soon!
+            Sem registros ainda. Confira novamente em breve!
           </Alert>
         ) : (
           <Stack spacing={{ xs: 2, sm: 3 }}>
@@ -264,7 +264,7 @@ function SubjectPage() {
                           color: theme.palette.secondary.main,
                         }}
                       >
-                        Read more →
+                        Leia mais →
                       </Typography>
                     </Stack>
                   </Stack>
