@@ -11,6 +11,7 @@ interface AdminHeaderProps {
   status: string | null
   statusType: 'success' | 'info' | 'warning' | 'error'
   error: string | null
+  mode?: 'default' | 'hero'
 }
 
 export function AdminHeader({
@@ -19,13 +20,24 @@ export function AdminHeader({
   onLogout,
   status,
   statusType,
-  error
+  error,
+  mode = 'default'
 }: AdminHeaderProps) {
+  const isHero = mode === 'hero'
+
   return (
-    <Paper sx={{ p: 3 }}>
-      <Stack spacing={2}>
-        <Typography variant="h4">Mini Admin Panel</Typography>
-        <Typography variant="body2" color="text.secondary">
+    <Paper
+      sx={{
+        p: isHero ? { xs: 4, md: 6 } : 3,
+        width: '100%',
+        maxWidth: isHero ? '80vw' : 'none',
+        mx: 'auto',
+        transition: 'all 240ms ease'
+      }}
+    >
+      <Stack spacing={2} alignItems={isHero ? 'center' : 'stretch'}>
+        <Typography variant={isHero ? 'h3' : 'h4'}>Mini Admin Panel</Typography>
+        <Typography variant={isHero ? 'body1' : 'body2'} color="text.secondary">
           Manage subjects and posts stored in Supabase.
         </Typography>
 
