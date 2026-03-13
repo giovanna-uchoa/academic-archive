@@ -27,8 +27,8 @@ export default function App() {
           <Suspense fallback={<div>Carregando...</div>}>
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/subject/:subjectId" element={<SubjectPage />} />
               <Route path="/admin" element={<AdminPage />} />
+              <Route path="/:subjectId" element={<SubjectPage />} />
             </Routes>
           </Suspense>
         </Box>

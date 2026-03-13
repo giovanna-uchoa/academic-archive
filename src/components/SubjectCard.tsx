@@ -38,7 +38,7 @@ export function SubjectCard({
       <CardContent sx={{ flex: 1 }}>
         <Link
           component={RouterLink}
-          to={`/subject/${id}`}
+          to={`/${id}`}
           underline="none"
           color="inherit"
           sx={{

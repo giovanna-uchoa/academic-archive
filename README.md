@@ -36,7 +36,7 @@ src/
       SubjectSection.tsx
   pages/
     HomePage.tsx            # /
-    SubjectPage.tsx         # /subject/:subjectId
+    SubjectPage.tsx         # /:subjectId
     admin/
       AdminPage.tsx         # /admin
   theme/
