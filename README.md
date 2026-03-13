@@ -1,7 +1,8 @@
 
 # Academic Archive
 
-> [!NOTE] **Disclaimer:** Most of this project was vibecoded and/or bootstrapped from boilerplate. Use it as a starting point, not as a reference for best practices.
+> [!WARNING] 
+> Most of this project was vibecoded and/or bootstrapped from boilerplate. Use it as a starting point, not as a reference for best practices.
 
 A personal academic archive built with React, TypeScript, and Supabase. Lets you organize content into subjects and posts, with a built-in admin panel to manage everything. Original UI design from [Figma – Personal Tech Portfolio Blog (Community)](https://www.figma.com/design/vGsWTFg8pBClvaGv4ZF62Y/Personal-Tech-Portfolio-Blog--Community-).
 
