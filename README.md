@@ -85,4 +85,3 @@ npm run build
 Navigate to `/#/admin` to create, edit, and delete subjects and posts.
 
 Authentication is handled via Supabase — make sure your project's auth settings are configured before using the admin panel.
-  
