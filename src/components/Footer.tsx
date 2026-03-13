@@ -5,7 +5,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
-export function Footer() {
+function Footer() {
   const theme = useTheme();
   const year = new Date().getFullYear();
   const appName = import.meta.env.VITE_APP_NAME;
@@ -20,15 +20,7 @@ export function Footer() {
       }}
     >
       <Container maxWidth="md" sx={{ py: { xs: 3, sm: 4 } }}>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={1}
-          sx={{
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            textAlign: { xs: 'center', md: 'left' },
-          }}
-        >
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Terminal size={16} />
             <Typography
@@ -50,10 +42,12 @@ export function Footer() {
               opacity: 0.8,
             }}
           >
-            © {year} Alguns direitos reservados · CC BY-NC 4.0
+            © {year} Some rights reserved · CC BY-NC 4.0
           </Typography>
         </Stack>
       </Container>
     </Box>
   );
 }
+
+export default Footer;
