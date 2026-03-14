@@ -4,7 +4,7 @@
 > [!WARNING] 
 > Most of this project was vibecoded and/or bootstrapped from boilerplate. Use it as a starting point, not as a reference for best practices.
 
-A personal academic archive built with React, TypeScript, and Supabase. Lets you organize content into subjects and posts, with a built-in admin panel to manage everything. Original UI design from [Figma – Personal Tech Portfolio Blog (Community)](https://www.figma.com/design/vGsWTFg8pBClvaGv4ZF62Y/Personal-Tech-Portfolio-Blog--Community-).
+A personal academic archive built with React, TypeScript, and Supabase. Lets you organize content into subjects and posts, with a built-in admin panel to manage everything. Original UI design from [Figma – Personal Tech Portfolio Blog (Community)](https://www.figma.com/design/vGsWTFg8pBClvaGv4ZF62Y/Personal-Tech-Portfolio-Blog--Community-) mixed with [jekyll-theme-chirpy template](https://github.com/cotes2020/jekyll-theme-chirpy).
 
 ## Tech stack
 
@@ -13,7 +13,7 @@ A personal academic archive built with React, TypeScript, and Supabase. Lets you
 - **Material UI v5** — component library and theming
 - **React Router DOM** — client-side routing (hash-based)
 - **Supabase** — backend / database
-- **marked** + **DOMPurify** — safe Markdown rendering
+- **marked** — Markdown-only rendering (raw HTML input is escaped)
 - **lucide-react** — icons
 
 ## Project structure
@@ -46,7 +46,7 @@ src/
   utils/
     cmsApi.ts               # API helpers
     dataTypes.ts            # Shared TypeScript types
-    renderContent.ts        # Markdown → sanitized HTML
+    renderContent.ts        # Markdown-only renderer (escapes raw HTML)
     supabaseClient.ts       # Supabase client init
     useCmsContent.ts        # Data-fetching hook
 ```
