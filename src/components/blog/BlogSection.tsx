@@ -44,7 +44,7 @@ function BlogSection({ subject, subjectPosts }: BlogSectionProps) {
         ) : (
           <Stack spacing={{ xs: 2, sm: 3 }}>
             {subjectPosts.map((post) => (
-              <BlogCard post={post} onSelectRedirectTo={`/subjects/${subject.id}/post/${post.id}`} />
+              <BlogCard key={post.id} post={post} onSelectRedirectTo={`/subjects/${subject.id}/post/${post.id}`} />
             ))}
           </Stack>
         )}

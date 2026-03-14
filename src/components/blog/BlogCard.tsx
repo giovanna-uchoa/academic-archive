@@ -1,13 +1,14 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Clock } from 'lucide-react';
+import { Clock, Hash } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
+import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { Post } from '../../utils/dataTypes';
-import { formatPostDate } from '../../utils/contentTaxonomy';
+import { formatPostDate, getPostTags, toTagSlug } from '../../utils/contentTaxonomy';
 
 interface BlogCardProps {
   post: Post;
@@ -16,12 +17,29 @@ interface BlogCardProps {
 
 function BlogCard({ post, onSelectRedirectTo }: BlogCardProps) {
   const theme = useTheme();
+  const tags = getPostTags(post).slice(0, 4);
 
   return (
-    <Card key={post.id} sx={{ cursor: 'pointer' }}>
+    <Card
+      key={post.id}
+      sx={{
+        cursor: 'pointer',
+        borderRadius: 3,
+        border: `1px solid ${theme.palette.divider}`,
+        boxShadow: 'none',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+        '&:hover': {
+          transform: 'translateY(-3px)',
+          boxShadow: theme.palette.mode === 'light'
+            ? '0 18px 32px rgba(64, 45, 24, 0.08)'
+            : '0 18px 32px rgba(0, 0, 0, 0.24)',
+          borderColor: theme.palette.primary.light,
+        },
+      }}
+    >
       <CardActionArea component={RouterLink} to={onSelectRedirectTo}>
-        <CardContent>
-          <Stack spacing={1}>
+        <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
+          <Stack spacing={1.5}>
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
               spacing={2}
@@ -42,15 +60,6 @@ function BlogCard({ post, onSelectRedirectTo }: BlogCardProps) {
               >
                 {post.title}
               </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: theme.palette.text.secondary,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {formatPostDate(post.date)}
-              </Typography>
             </Stack>
 
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -65,12 +74,23 @@ function BlogCard({ post, onSelectRedirectTo }: BlogCardProps) {
                 pt: 1,
               }}
             >
-              <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-                <Clock size={16} />
-                <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                  {post.timeSpent}
-                </Typography>
-              </Stack>
+              {post.timeSpent &&
+                <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+                  <Clock size={16} />
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                    {post.timeSpent}
+                  </Typography>
+                </Stack>
+              }
+              <Typography
+                variant="caption"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {formatPostDate(post.date)}
+              </Typography>
               <Typography
                 variant="caption"
                 sx={{

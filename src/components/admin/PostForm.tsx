@@ -10,12 +10,22 @@ import Divider from '@mui/material/Divider';
 import { cmsApi } from '../../utils/cmsApi';
 import type { Post, Subject } from '../../utils/dataTypes';
 
-interface PostSectionProps {
+interface PostFormProps {
   posts: Post[];
   subjects: Subject[];
   reload: () => Promise<void>;
   setStatus: (status: string | null) => void;
   setStatusType: (type: 'success' | 'error') => void;
+}
+
+interface PostFormState {
+  title: string;
+  excerpt: string;
+  content: string;
+  date: string;
+  timeSpent: string;
+  subjectId: string;
+  tagsInput: string;
 }
 
 const EMPTY_POST = {
@@ -25,9 +35,17 @@ const EMPTY_POST = {
   date: '',
   timeSpent: '',
   subjectId: '',
-};
+  tagsInput: '',
+} satisfies PostFormState;
 
-export function PostSection({ posts, subjects, reload, setStatus, setStatusType}: PostSectionProps) {
+function parseTagsInput(value: string): string[] {
+  return value
+    .split(',')
+    .map(tag => tag.trim())
+    .filter(Boolean);
+}
+
+function PostForm({ posts, subjects, reload, setStatus, setStatusType}: PostFormProps) {
   const [postForm, setPostForm] = useState(EMPTY_POST);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
 
@@ -43,13 +61,23 @@ export function PostSection({ posts, subjects, reload, setStatus, setStatusType}
     event.preventDefault();
     clearStatus();
 
+    const payload: Omit<Post, 'id'> = {
+      title: postForm.title,
+      excerpt: postForm.excerpt,
+      content: postForm.content,
+      date: postForm.date,
+      timeSpent: postForm.timeSpent,
+      subjectId: postForm.subjectId,
+      tags: parseTagsInput(postForm.tagsInput),
+    };
+
     try {
       if (editingPostId) {
-        await cmsApi.updatePost(editingPostId, postForm);
+        await cmsApi.updatePost(editingPostId, payload);
         setStatusType('success');
         setStatus(`Post "${postForm.title}" updated.`);
       } else {
-        await cmsApi.createPost(postForm);
+        await cmsApi.createPost(payload);
         setStatusType('success');
         setStatus(`Post "${postForm.title}" created.`);
       }
@@ -72,6 +100,7 @@ export function PostSection({ posts, subjects, reload, setStatus, setStatusType}
       date: post.date,
       timeSpent: post.timeSpent,
       subjectId: post.subjectId,
+      tagsInput: (post.tags ?? []).join(', '),
     });
     clearStatus();
   };
@@ -155,9 +184,17 @@ export function PostSection({ posts, subjects, reload, setStatus, setStatusType}
               />
             </Stack>
             <TextField
+              label="Tags (comma separated)"
+              value={postForm.tagsInput}
+              onChange={event =>
+                setPostForm(prev => ({ ...prev, tagsInput: event.target.value }))
+              }
+              helperText="Example: ai, machine-learning, portfolio"
+            />
+            <TextField
               multiline
               minRows={8}
-              label="Content (Markdown or HTML)"
+              label="Content (Markdown only)"
               value={postForm.content}
               onChange={event =>
                 setPostForm(prev => ({ ...prev, content: event.target.value }))
@@ -200,6 +237,11 @@ export function PostSection({ posts, subjects, reload, setStatus, setStatusType}
                   <Typography variant="body2" color="text.secondary">
                     #{post.id} · {subjectById.get(post.subjectId)?.title || post.subjectId}
                   </Typography>
+                  {(post.tags?.length ?? 0) > 0 && (
+                    <Typography variant="body2" color="text.secondary">
+                      Tags: {(post.tags ?? []).join(', ')}
+                    </Typography>
+                  )}
                 </Box>
                 <Stack direction="row" spacing={1}>
                   <Button size="small" onClick={() => handleEditPost(post)}>
@@ -221,3 +263,5 @@ export function PostSection({ posts, subjects, reload, setStatus, setStatusType}
     </Paper>
   )
 }
+
+export default PostForm;
