@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useCmsContent } from '../utils/useCmsContent';
-import { buildArchiveGroups, formatPostDate, getPostPath } from '../utils/contentTaxonomy';
+import { buildArchiveGroups, getPostPath } from '../utils/contentTaxonomy';
 
 export default function ArchivesPage() {
   const { posts, subjects, loading, error } = useCmsContent();

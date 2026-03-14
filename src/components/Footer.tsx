@@ -35,14 +35,10 @@ function Footer() {
             </Typography>
           </Stack>
 
-          <Typography
-            variant="caption"
-            sx={{
-              color: theme.palette.text.secondary,
-              opacity: 0.8,
-            }}
-          >
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, opacity: 0.8 }}>
             © {year} Some rights reserved · CC BY-NC 4.0
+            <br />
+            Star icon by Maxicons · The Noun Project (CC BY 3.0)
           </Typography>
         </Stack>
       </Container>

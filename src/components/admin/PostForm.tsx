@@ -38,7 +38,7 @@ const EMPTY_POST = {
   date: '',
   timeSpent: '',
   subjectId: '',
-  selectedTags: [],
+  selectedTags: [] as string[],
 } satisfies PostFormState;
 
 function PostForm({ posts, subjects, tags, reload, setStatus, setStatusType}: PostFormProps) {
