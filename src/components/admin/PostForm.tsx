@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import { cmsApi } from '../../utils/cmsApi';
 import type { Post, Subject } from '../../utils/dataTypes';
+import { normalizePostDate } from '../../utils/contentTaxonomy';
 
 interface PostFormProps {
   posts: Post[];
@@ -61,11 +62,18 @@ function PostForm({ posts, subjects, reload, setStatus, setStatusType}: PostForm
     event.preventDefault();
     clearStatus();
 
+    const normalizedDate = normalizePostDate(postForm.date);
+    if (!normalizedDate) {
+      setStatusType('error');
+      setStatus('Invalid date. Use yyyy/mm/dd.');
+      return;
+    }
+
     const payload: Omit<Post, 'id'> = {
       title: postForm.title,
       excerpt: postForm.excerpt,
       content: postForm.content,
-      date: postForm.date,
+      date: normalizedDate,
       timeSpent: postForm.timeSpent,
       subjectId: postForm.subjectId,
       tags: parseTagsInput(postForm.tagsInput),
@@ -97,7 +105,7 @@ function PostForm({ posts, subjects, reload, setStatus, setStatusType}: PostForm
       title: post.title,
       excerpt: post.excerpt,
       content: post.content,
-      date: post.date,
+      date: normalizePostDate(post.date) ?? post.date,
       timeSpent: post.timeSpent,
       subjectId: post.subjectId,
       tagsInput: (post.tags ?? []).join(', '),
@@ -172,6 +180,12 @@ function PostForm({ posts, subjects, reload, setStatus, setStatusType}: PostForm
                 onChange={event =>
                   setPostForm(prev => ({ ...prev, date: event.target.value }))
                 }
+                placeholder="yyyy/mm/dd"
+                helperText="Use yyyy/mm/dd"
+                inputProps={{
+                  inputMode: 'numeric',
+                  pattern: '\\d{4}/\\d{2}/\\d{2}',
+                }}
                 required
               />
               <TextField

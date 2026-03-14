@@ -17,7 +17,7 @@ interface Props {
   onSuccess: () => void
 }
 
-export function LoginDialog({ open, onClose, onSuccess }: Props) {
+function LoginDialog({ open, onClose, onSuccess }: Props) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -79,3 +79,5 @@ export function LoginDialog({ open, onClose, onSuccess }: Props) {
     </Dialog>
   )
 }
+
+export default LoginDialog;

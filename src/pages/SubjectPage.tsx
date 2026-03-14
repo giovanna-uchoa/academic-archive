@@ -90,7 +90,7 @@ function SubjectPage() {
     >
       <Button
         startIcon={<ArrowLeft size={18} />}
-        onClick={() => navigate(-1)}
+        onClick={() => navigate(`/catalog`)}
         sx={{
           mb: 4,
           textTransform: 'none',

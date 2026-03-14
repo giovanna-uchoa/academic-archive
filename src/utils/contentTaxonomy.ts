@@ -4,21 +4,64 @@ export function getPostPath(post: Pick<Post, 'id' | 'subjectId'>): string {
   return `/subjects/${post.subjectId}/post/${post.id}`;
 }
 
-function parseDateToken(value: string): Date | null {
+interface PostDateParts {
+  year: number;
+  month: number;
+  day: number;
+}
+
+function parsePostDateParts(value: string): PostDateParts | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
 
-  const isoLike = new Date(trimmed);
-  if (!Number.isNaN(isoLike.getTime())) return isoLike;
+  const ymd = trimmed.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);
+  if (!ymd) return null;
 
-  const brFormat = trimmed.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
-  if (brFormat) {
-    const [, day, month, year] = brFormat;
-    const parsed = new Date(Number(year), Number(month) - 1, Number(day));
-    if (!Number.isNaN(parsed.getTime())) return parsed;
+  const year = Number(ymd[1]);
+  const month = Number(ymd[2]);
+  const day = Number(ymd[3]);
+
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+    return null;
   }
 
-  return null;
+  const parsed = new Date(year, month - 1, day);
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() !== month - 1 ||
+    parsed.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return { year, month, day };
+}
+
+function toYmdString(parts: PostDateParts, separator: '/' | '-'): string {
+  return [
+    String(parts.year).padStart(4, '0'),
+    String(parts.month).padStart(2, '0'),
+    String(parts.day).padStart(2, '0'),
+  ].join(separator);
+}
+
+export function normalizePostDate(value: string): string | null {
+  const parts = parsePostDateParts(value);
+  if (!parts) return null;
+  return toYmdString(parts, '/');
+}
+
+export function toPostStorageDate(value: string): string | null {
+  const parts = parsePostDateParts(value);
+  if (!parts) return null;
+  return toYmdString(parts, '-');
+}
+
+function parseDateToken(value: string): Date | null {
+  const parts = parsePostDateParts(value);
+  if (!parts) return null;
+  return new Date(parts.year, parts.month - 1, parts.day);
 }
 
 export function getPostDate(post: Post): Date {
@@ -158,14 +201,7 @@ export function buildArchiveGroups(posts: Post[]): ArchiveGroup[] {
 }
 
 export function formatPostDate(value: string): string {
-  const parsed = parseDateToken(value);
-  if (!parsed) return value;
-
-  return parsed.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+  return normalizePostDate(value) ?? value;
 }
 
 export function toTagSlug(value: string): string {

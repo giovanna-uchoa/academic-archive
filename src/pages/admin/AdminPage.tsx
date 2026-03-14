@@ -4,12 +4,12 @@ import Stack from '@mui/material/Stack'
 import CircularProgress from '@mui/material/CircularProgress'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
-import { AdminHeader } from '@/components/admin/AdminHeader'
-import { SubjectSection } from '@/components/admin/SubjectSection'
-import { PostSection } from '@/components/admin/PostSection'
-import { useCmsContent } from '@/utils/useCmsContent'
-import { LoginDialog } from '@/components/admin/LoginDialog'
-import { supabase } from '@/utils/supabaseClient'
+import AdminHeader from '../../components/admin/AdminHeader'
+import LoginDialog from '../../components/admin/LoginDialog'
+import SubjectForm from '../../components/admin/SubjectForm'
+import PostForm from '../../components/admin/PostForm'
+import { useCmsContent } from '../../utils/useCmsContent'
+import { supabase } from '../../utils/supabaseClient'
 
 function AdminPage() {
   const { subjects, posts, loading, error, reload } = useCmsContent()
@@ -113,14 +113,14 @@ function AdminPage() {
               </Tabs>
 
               {activeSection === 'subjects' ? (
-                <SubjectSection
+                <SubjectForm
                   subjects={subjects}
                   reload={reload}
                   setStatus={setStatus}
                   setStatusType={setStatusType}
                 />
               ) : (
-                <PostSection
+                <PostForm
                   posts={sortedPosts}
                   subjects={subjects}
                   reload={reload}

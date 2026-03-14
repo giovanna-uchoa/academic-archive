@@ -1,5 +1,6 @@
 import type { Post, Subject } from './dataTypes'
 import { supabase } from './supabaseClient'
+import { normalizePostDate, toPostStorageDate } from './contentTaxonomy'
 
 async function ensureAuthenticated() {
   const { data } = await supabase.auth.getUser()
@@ -7,6 +8,25 @@ async function ensureAuthenticated() {
     throw new Error('Not authenticated')
   }
   return data.user
+}
+
+function mapPostFromDb(post: Post): Post {
+  return {
+    ...post,
+    date: normalizePostDate(post.date) ?? post.date,
+  }
+}
+
+function mapPostForDb(post: Omit<Post, 'id'>): Omit<Post, 'id'> {
+  const storageDate = toPostStorageDate(post.date)
+  if (!storageDate) {
+    throw new Error('Invalid post date. Use yyyy/mm/dd.')
+  }
+
+  return {
+    ...post,
+    date: storageDate,
+  }
 }
 
 export const cmsApi = {
@@ -39,10 +59,10 @@ export const cmsApi = {
     const { data, error } = await supabase
       .from('posts')
       .select('*')
-      .order('id', { ascending: true })
+      .order('date', { ascending: true })
 
     if (error) throw new Error(error.message)
-    return (data ?? [])
+    return (data ?? []).map(mapPostFromDb)
   },
 
   async listPostsBySubjectId(subjectId: string): Promise<Post[]> {
@@ -53,7 +73,7 @@ export const cmsApi = {
       .order('id', { ascending: true })
 
     if (error) throw new Error(error.message)
-    return (data ?? [])
+    return (data ?? []).map(mapPostFromDb)
   },
 
   async getPost(postId: string): Promise<Post | null> {
@@ -64,7 +84,7 @@ export const cmsApi = {
       .single()
 
     if (error) throw new Error(error.message)
-    return data
+    return data ? mapPostFromDb(data) : null
   },
 
   // =========================
@@ -125,14 +145,16 @@ export const cmsApi = {
   ): Promise<Post> {
     await ensureAuthenticated()
 
+    const payload = mapPostForDb(post)
+
     const { data, error } = await supabase
       .from('posts')
-      .insert(post)
+      .insert(payload)
       .select()
       .single()
 
     if (error) throw new Error(error.message)
-    return data
+    return mapPostFromDb(data)
   },
 
   async updatePost(
@@ -141,15 +163,17 @@ export const cmsApi = {
   ): Promise<Post> {
     await ensureAuthenticated()
 
+    const payload = mapPostForDb(post)
+
     const { data, error } = await supabase
       .from('posts')
-      .update(post)
+      .update(payload)
       .eq('id', postId)
       .select()
       .single()
 
     if (error) throw new Error(error.message)
-    return data
+    return mapPostFromDb(data)
   },
 
   async deletePost(
