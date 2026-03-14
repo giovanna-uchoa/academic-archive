@@ -68,7 +68,7 @@ function HomePage() {
                 <Stack
                   key={category.id}
                   direction="row"
-                  spacing={1}
+                  spacing={.5}
                   component={RouterLink}
                   to={`/subjects/${category.id}`}
                   sx={{
@@ -80,7 +80,7 @@ function HomePage() {
                 >
                   <Box sx={{ display: 'flex', color: 'secondary.main' }}>
                     {renderSubjectIcon(category.icon, {
-                      size: 16,
+                      size: 18,
                       fallbackSize: '1rem',
                     })}
                   </Box>

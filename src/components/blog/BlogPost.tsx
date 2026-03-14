@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Calendar, Clock, Hash } from 'lucide-react';
 import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -8,7 +9,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import type { Post } from '../../utils/dataTypes';
-import { formatPostDate, getPostTags, toTagSlug } from '../../utils/contentTaxonomy';
+import { formatPostDate, getPostTags, getPostSubjectTitle, toTagSlug } from '../../utils/contentTaxonomy';
 import MarkdownContent from '../MarkdownContent';
 
 interface BlogPostProps {
@@ -23,6 +24,16 @@ function BlogPost({ post, subjectTitle, onBack, backLabel = 'Back to all posts' 
   const tags = getPostTags(post);
   const formattedDate = formatPostDate(post.date);
   const timeSpent = post.timeSpent?.trim() || 'Time spent not specified';
+  const [mainCategory, setMainCategory] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (subjectTitle) {
+      setMainCategory(subjectTitle);
+      return;
+    }
+
+    getPostSubjectTitle(post).then(setMainCategory);
+  }, [post, subjectTitle]);
 
   return (
     <Box
@@ -59,9 +70,9 @@ function BlogPost({ post, subjectTitle, onBack, backLabel = 'Back to all posts' 
             rowGap: 1,
           }}
         >
-          {/* Subject */}
+          {/* Main Category */}
           <Chip
-            label={subjectTitle || post.subjectId}
+            label={mainCategory}
             size="small"
             sx={{
               fontWeight: 600,

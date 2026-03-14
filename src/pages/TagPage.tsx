@@ -1,0 +1,60 @@
+import { useParams } from 'react-router-dom';
+import { Hash } from 'lucide-react';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useCmsContent } from '../utils/useCmsContent';
+import { buildPostTags, toTagSlug, getPostPath } from '../utils/contentTaxonomy';
+import BlogCard from '../components/blog/BlogCard';
+
+export default function TagPage() {
+  const { tagSlug } = useParams<{ tagSlug: string }>();
+  const { posts, subjects, loading, error } = useCmsContent();
+
+  const postTags = buildPostTags(posts, subjects);
+  const filteredPosts = posts.filter((post) => {
+    const tags = postTags[post.id] ?? [];
+    return tags.some((tag) => toTagSlug(tag) === tagSlug);
+  });
+
+  if (loading) {
+    return (
+      <Box sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return <Alert severity="error">{error}</Alert>;
+  }
+
+  return (
+    <Stack spacing={3}>
+      <Box>
+        <Typography variant="overline" sx={{ letterSpacing: 2 }}>Tag</Typography>
+        <Typography variant="h3" sx={{ mb: 1 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <Hash size={24} />
+            <span>{(tagSlug || '').replace(/-/g, ' ')}</span>
+          </Stack>
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          {filteredPosts.length} related post(s).
+        </Typography>
+      </Box>
+
+      {filteredPosts.length === 0 ? (
+        <Alert severity="info">No posts found for this tag.</Alert>
+      ) : (
+        <Stack spacing={1.5}>
+          {filteredPosts.map((post) => (
+            <BlogCard key={post.id} post={post} onSelectRedirectTo={getPostPath(post)} />
+          ))}
+        </Stack>
+      )}
+    </Stack>
+  );
+}

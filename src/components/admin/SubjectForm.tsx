@@ -7,6 +7,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import { cmsApi } from '../../utils/cmsApi';
+import { renderSubjectIcon } from '../../utils/iconRenderer';
 import type { Subject } from '../../utils/dataTypes';
 
 interface SubjectFormProps {
@@ -167,7 +168,15 @@ function SubjectForm({ subjects, reload, setStatus, setStatusType}: SubjectFormP
                 spacing={1}
               >
                 <Box>
-                  <Typography fontWeight={600}>{subject.icon ? `${subject.icon} ` : ''}{subject.title}</Typography>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', color: 'secondary.main' }}>
+                      {renderSubjectIcon(subject.icon, {
+                        size: 18,
+                        fallbackSize: '1rem',
+                      })}
+                    </Box>  
+                   <Typography fontWeight={600}> {subject.title} </Typography>
+                  </Stack>
                   <Typography variant="body2" color="text.secondary">
                     {subject.id}
                   </Typography>

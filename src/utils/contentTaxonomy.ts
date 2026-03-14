@@ -1,4 +1,5 @@
 import type { ArchiveGroup, CategorySummary, Post, Subject, TagSummary} from './dataTypes';
+import { cmsApi } from './cmsApi';
 
 export function getPostPath(post: Pick<Post, 'id' | 'subjectId'>): string {
   return `/subjects/${post.subjectId}/post/${post.id}`;
@@ -68,6 +69,11 @@ export function getPostDate(post: Post): Date {
   return parseDateToken(post.date) ?? new Date(0);
 }
 
+export async function getPostSubjectTitle(post: Post): Promise<string> {
+  const subject = await cmsApi.getSubject(post.subjectId);
+  return subject?.title ?? post.subjectId 
+}
+
 export function sortPostsByDateDesc(posts: Post[]): Post[] {
   return [...posts].sort((a, b) => getPostDate(b).getTime() - getPostDate(a).getTime());
 }
@@ -92,14 +98,6 @@ function normalizeTag(rawTag: string): string {
     .replace(/[^a-z0-9-]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
-}
-
-function titleCase(tag: string): string {
-  return tag
-    .split('-')
-    .filter(Boolean)
-    .map((token) => token.charAt(0).toUpperCase() + token.slice(1))
-    .join(' ');
 }
 
 function extractHashtags(post: Post): string[] {
@@ -154,7 +152,7 @@ export function buildTagSummary(posts: Post[], subjects: Subject[]): TagSummary[
         existing.count += 1;
       } else {
         usage.set(slug, {
-          label: titleCase(slug),
+          label: slug,
           count: 1,
         });
       }
