@@ -4,7 +4,6 @@ import { useTheme } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
-import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { Post } from '../../utils/dataTypes';
@@ -74,14 +73,6 @@ function BlogCard({ post, onSelectRedirectTo }: BlogCardProps) {
                 pt: 1,
               }}
             >
-              {post.timeSpent &&
-                <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-                  <Clock size={16} />
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                    {post.timeSpent}
-                  </Typography>
-                </Stack>
-              }
               <Typography
                 variant="caption"
                 sx={{

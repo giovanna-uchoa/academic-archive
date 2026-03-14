@@ -1,12 +1,117 @@
-import { Hero } from '../components/Hero';
-import { SubjectsOverview } from '../components/SubjectsOverview';
+import { Link as RouterLink } from 'react-router-dom';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useCmsContent } from '../utils/useCmsContent';
+import {
+  buildCategorySummary,
+  buildTagSummary,
+  sortPostsByDateDesc,
+} from '../utils/contentTaxonomy';
+import { renderSubjectIcon } from '../utils/iconRenderer';
+
+import Hero from '../components/Hero';
+import BlogCard from '../components/blog/BlogCard';
 
 function HomePage() {
+  const { posts, subjects, loading, error } = useCmsContent();
+
+  if (loading) {
+    return (
+      <Box sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return <Alert severity="error">{error}</Alert>;
+  }
+
+  const orderedPosts = sortPostsByDateDesc(posts);
+  const recentPosts = orderedPosts.slice(0, 6);
+  const categories = buildCategorySummary(subjects, posts).slice(0, 6);
+  const tags = buildTagSummary(posts, subjects).slice(0, 12);
+
   return (
-    <main>
+    <Stack spacing={4}>
       <Hero />
-      <SubjectsOverview />
-    </main>
+
+      <Divider />
+
+      <Grid container spacing={3}>
+        {/* Posts */}
+        <Grid item xs={12} lg={8}>
+          <Stack spacing={2.5}>
+            <Typography variant="h5">Recent Entries</Typography>
+
+            <Stack spacing={2}>
+              {recentPosts.map((post) => (
+                <BlogCard key={post.id} post={post} onSelectRedirectTo={`post/${post.id}`}/>
+              ))}
+            </Stack>
+          </Stack>
+        </Grid>
+
+        {/* Sidebar */}
+        <Grid item xs={12} lg={4}>
+          <Stack spacing={4}>
+            <Stack spacing={1.5}>
+              <Typography variant="h6">Catalog</Typography>
+
+              {categories.map((category) => (
+                <Stack
+                  key={category.id}
+                  direction="row"
+                  spacing={1}
+                  component={RouterLink}
+                  to={`/subjects/${category.id}`}
+                  sx={{
+                    alignItems: 'center',
+                    textDecoration: 'none',
+                    color: 'text.secondary',
+                    '&:hover': { color: 'secondary.main' },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', color: 'secondary.main' }}>
+                    {renderSubjectIcon(category.icon, {
+                      size: 16,
+                      fallbackSize: '1rem',
+                    })}
+                  </Box>
+
+                  <Typography variant="body2">
+                    {category.title} ({category.totalPosts})
+                  </Typography>
+                </Stack>
+              ))}
+            </Stack>
+
+            <Stack spacing={1.5}>
+              <Typography variant="h6">Popular Tags</Typography>
+
+              <Stack direction="row" flexWrap="wrap" gap={1}>
+                {tags.map((tag) => (
+                  <Chip
+                    key={tag.slug}
+                    size="small"
+                    label={`${tag.label} (${tag.totalPosts})`}
+                    component={RouterLink}
+                    to={`/tags/${tag.slug}`}
+                    clickable
+                  />
+                ))}
+              </Stack>
+            </Stack>
+          </Stack>
+        </Grid>
+      </Grid>
+    </Stack>
   );
 }
 
