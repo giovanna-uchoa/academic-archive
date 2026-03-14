@@ -24,6 +24,17 @@ export const cmsApi = {
     return data ?? []
   },
 
+  async getSubject(subjectId: string): Promise<Subject | null> {
+    const { data, error } = await supabase
+      .from('subjects')
+      .select('*')
+      .eq('id', subjectId)
+      .single()
+
+    if (error) throw new Error(error.message)
+    return data
+  },
+
   async listPosts(): Promise<Post[]> {
     const { data, error } = await supabase
       .from('posts')
@@ -31,7 +42,29 @@ export const cmsApi = {
       .order('id', { ascending: true })
 
     if (error) throw new Error(error.message)
-    return data ?? []
+    return (data ?? [])
+  },
+
+  async listPostsBySubjectId(subjectId: string): Promise<Post[]> {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('subjectId', subjectId)
+      .order('id', { ascending: true })
+
+    if (error) throw new Error(error.message)
+    return (data ?? [])
+  },
+
+  async getPost(postId: string): Promise<Post | null> {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('id', postId)
+      .single()
+
+    if (error) throw new Error(error.message)
+    return data
   },
 
   // =========================

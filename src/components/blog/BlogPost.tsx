@@ -5,16 +5,17 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/material/styles';
-import type { Post } from '@/utils/dataTypes';
-import { renderRichContent } from '@/utils/renderContent';
+import type { Post } from '../../utils/dataTypes';
+import MarkdownContent from '../MarkdownContent';
 
 interface BlogPostProps {
   post: Post;
   subjectTitle?: string;
   onBack: () => void;
+  backLabel?: string;
 }
 
-export function BlogPost({ post, subjectTitle, onBack }: BlogPostProps) {
+function BlogPost({ post, subjectTitle, onBack, backLabel = 'Back to all posts' }: BlogPostProps) {
   const theme = useTheme();
 
   return (
@@ -39,7 +40,7 @@ export function BlogPost({ post, subjectTitle, onBack }: BlogPostProps) {
           },
         }}
       >
-        Back to all posts
+        {backLabel}
       </Button>
 
       <Stack spacing={{ xs: 2, sm: 3 }}>
@@ -84,73 +85,10 @@ export function BlogPost({ post, subjectTitle, onBack }: BlogPostProps) {
           </Stack>
         </Box>
 
-        <Box
-          sx={{
-            '& h2': {
-              mt: 3,
-              mb: 1.5,
-              fontSize: '1.5rem',
-              fontWeight: 600,
-              color: theme.palette.primary.main,
-            },
-            '& h3': {
-              mt: 2.5,
-              mb: 1,
-              fontSize: '1.25rem',
-              fontWeight: 600,
-              color: theme.palette.primary.main,
-            },
-            '& p': {
-              mb: 1.5,
-              color: theme.palette.text.primary,
-              lineHeight: 1.5,
-            },
-            '& ul, & ol': {
-              mb: 1.5,
-              pl: 2,
-              color: theme.palette.text.primary,
-            },
-            '& li': {
-              mb: 0.5,
-            },
-            '& code': {
-              backgroundColor: theme.palette.mode === 'light' ? '#f4ede4' : '#2a1f1a',
-              color: theme.palette.secondary.main,
-              px: 0.5,
-              py: 0.25,
-              borderRadius: '0.25rem',
-              fontFamily: 'monospace',
-              fontSize: '0.875em',
-            },
-            '& pre': {
-              backgroundColor: theme.palette.mode === 'light' ? '#f4ede4' : '#2a1f1a',
-              border: `1px solid ${theme.palette.divider}`,
-              borderRadius: '0.5rem',
-              p: 2,
-              overflow: 'auto',
-              mb: 1.5,
-            },
-            '& pre code': {
-              backgroundColor: 'transparent',
-              color: theme.palette.text.primary,
-              px: 0,
-              py: 0,
-            },
-            '& strong': {
-              fontWeight: 600,
-              color: theme.palette.primary.main,
-            },
-            '& a': {
-              color: theme.palette.secondary.main,
-              textDecoration: 'none',
-              '&:hover': {
-                textDecoration: 'underline',
-              },
-            },
-          }}
-          dangerouslySetInnerHTML={{ __html: renderRichContent(post.content) }}
-        />
+        <MarkdownContent content={post.content} />
       </Stack>
     </Box>
   );
 }
+
+export default BlogPost;
