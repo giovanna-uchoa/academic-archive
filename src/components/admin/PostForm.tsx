@@ -4,18 +4,31 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import { cmsApi } from '../../utils/cmsApi';
-import type { Post, Subject } from '../../utils/dataTypes';
+import type { Post, Subject, Tag } from '../../utils/dataTypes';
+import { normalizePostDate } from '../../utils/contentTaxonomy';
 
-interface PostSectionProps {
+interface PostFormProps {
   posts: Post[];
   subjects: Subject[];
+  tags: Tag[];
   reload: () => Promise<void>;
   setStatus: (status: string | null) => void;
   setStatusType: (type: 'success' | 'error') => void;
+}
+
+interface PostFormState {
+  title: string;
+  excerpt: string;
+  content: string;
+  date: string;
+  timeSpent: string;
+  subjectId: string;
+  selectedTags: string[];
 }
 
 const EMPTY_POST = {
@@ -25,9 +38,10 @@ const EMPTY_POST = {
   date: '',
   timeSpent: '',
   subjectId: '',
-};
+  selectedTags: [] as string[],
+} satisfies PostFormState;
 
-export function PostSection({ posts, subjects, reload, setStatus, setStatusType}: PostSectionProps) {
+function PostForm({ posts, subjects, tags, reload, setStatus, setStatusType}: PostFormProps) {
   const [postForm, setPostForm] = useState(EMPTY_POST);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
 
@@ -43,13 +57,30 @@ export function PostSection({ posts, subjects, reload, setStatus, setStatusType}
     event.preventDefault();
     clearStatus();
 
+    const normalizedDate = normalizePostDate(postForm.date);
+    if (!normalizedDate) {
+      setStatusType('error');
+      setStatus('Invalid date. Use yyyy/mm/dd.');
+      return;
+    }
+
+    const payload: Omit<Post, 'id'> = {
+      title: postForm.title,
+      excerpt: postForm.excerpt,
+      content: postForm.content,
+      date: normalizedDate,
+      timeSpent: postForm.timeSpent,
+      subjectId: postForm.subjectId,
+      tags: postForm.selectedTags,
+    };
+
     try {
       if (editingPostId) {
-        await cmsApi.updatePost(editingPostId, postForm);
+        await cmsApi.updatePost(editingPostId, payload);
         setStatusType('success');
         setStatus(`Post "${postForm.title}" updated.`);
       } else {
-        await cmsApi.createPost(postForm);
+        await cmsApi.createPost(payload);
         setStatusType('success');
         setStatus(`Post "${postForm.title}" created.`);
       }
@@ -69,9 +100,10 @@ export function PostSection({ posts, subjects, reload, setStatus, setStatusType}
       title: post.title,
       excerpt: post.excerpt,
       content: post.content,
-      date: post.date,
+      date: normalizePostDate(post.date) ?? post.date,
       timeSpent: post.timeSpent,
       subjectId: post.subjectId,
+      selectedTags: post.tags ?? [],
     });
     clearStatus();
   };
@@ -143,6 +175,12 @@ export function PostSection({ posts, subjects, reload, setStatus, setStatusType}
                 onChange={event =>
                   setPostForm(prev => ({ ...prev, date: event.target.value }))
                 }
+                placeholder="yyyy/mm/dd"
+                helperText="Use yyyy/mm/dd"
+                inputProps={{
+                  inputMode: 'numeric',
+                  pattern: '\\d{4}/\\d{2}/\\d{2}',
+                }}
                 required
               />
               <TextField
@@ -154,10 +192,25 @@ export function PostSection({ posts, subjects, reload, setStatus, setStatusType}
                 }
               />
             </Stack>
+            <Autocomplete
+              multiple
+              options={tags.map((tag) => tag.name)}
+              value={postForm.selectedTags}
+              onChange={(_event, value) => {
+                setPostForm((prev) => ({ ...prev, selectedTags: value }));
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Tags"
+                  helperText="Select one or more tags from the managed tag list."
+                />
+              )}
+            />
             <TextField
               multiline
               minRows={8}
-              label="Content (Markdown or HTML)"
+              label="Content (Markdown only)"
               value={postForm.content}
               onChange={event =>
                 setPostForm(prev => ({ ...prev, content: event.target.value }))
@@ -200,6 +253,11 @@ export function PostSection({ posts, subjects, reload, setStatus, setStatusType}
                   <Typography variant="body2" color="text.secondary">
                     #{post.id} · {subjectById.get(post.subjectId)?.title || post.subjectId}
                   </Typography>
+                  {post.tags.length > 0 && (
+                    <Typography variant="body2" color="text.secondary">
+                      Tags: {post.tags.join(', ')}
+                    </Typography>
+                  )}
                 </Box>
                 <Stack direction="row" spacing={1}>
                   <Button size="small" onClick={() => handleEditPost(post)}>
@@ -221,3 +279,5 @@ export function PostSection({ posts, subjects, reload, setStatus, setStatusType}
     </Paper>
   )
 }
+
+export default PostForm;

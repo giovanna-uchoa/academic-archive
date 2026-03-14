@@ -10,3 +10,11 @@ createRoot(document.getElementById("root")!).render(
     </ThemeProvider>
   </React.StrictMode>
 );
+
+declare global {
+  interface ImportMeta {
+    env: {
+      [key: string]: string;
+    };
+  }
+}

@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
-import { Terminal, Github, Linkedin, Mail, Menu, X } from 'lucide-react';
-import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { Terminal, Github, Linkedin, Gitlab, Mail, Menu, X } from 'lucide-react';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
@@ -12,41 +12,36 @@ import Link from '@mui/material/Link';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
-export function Header() {
+// ENV CONFIG
+const appName = import.meta.env.VITE_APP_NAME ?? 'App';
+const githubUrl = import.meta.env.VITE_GITHUB_URL;
+const gitlabUrl = import.meta.env.VITE_GITLAB_URL;
+const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL;
+const email = import.meta.env.VITE_USER_EMAIL;
+
+function Header() {
   const location = useLocation();
-  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isHome = location.pathname === '/';
-
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // ======================
-  // ENV CONFIG (safe)
-  // ======================
-  const appName = import.meta.env.VITE_APP_NAME ?? 'App';
-  const githubUrl = import.meta.env.VITE_GITHUB_URL;
-  const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL;
-  const email = import.meta.env.VITE_USER_EMAIL;
-
-  // ======================
   // NAV ITEMS
-  // ======================
   const navItems = useMemo(
     () => [
-      { label: 'Sobre', id: 'about' },
-      { label: 'Disciplinas', id: 'subjects' },
+      { label: 'Home', href: '/' },
+      { label: 'Archives', href: '/archives' },
+      { label: 'Catalog', href: '/catalog' },
+      { label: 'Tags', href: '/tags' },
     ],
     []
   );
 
-  // ======================
   // SOCIAL LINKS
-  // ======================
   const socialLinks = useMemo(
     () =>
       [
         { href: githubUrl, icon: Github, label: 'GitHub' },
+        { href: gitlabUrl, icon: Gitlab, label: 'Gitlab' },
         { href: linkedinUrl, icon: Linkedin, label: 'LinkedIn' },
         { href: email ? `mailto:${email}` : undefined, icon: Mail, label: 'Email' },
       ].filter(link => link.href),
@@ -55,25 +50,9 @@ export function Header() {
 
   const handleCloseMenu = () => setMobileMenuOpen(false);
 
-  // ======================
-  // SCROLL HANDLER
-  // ======================
-  const scrollToSection = (sectionId: string) => {
-    handleCloseMenu();
-
-    if (!isHome) {
-      navigate('/', { replace: false });
-      
-      setTimeout(() => {
-        const element = document.getElementById(sectionId);
-        element?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-
-      return;
-    }
-
-    const element = document.getElementById(sectionId);
-    element?.scrollIntoView({ behavior: 'smooth' });
+  const isActiveRoute = (href: string) => {
+    if (href === '/') return location.pathname === '/';
+    return location.pathname === href || location.pathname.startsWith(`${href}/`);
   };
 
   return (
@@ -81,9 +60,9 @@ export function Header() {
       position="sticky"
       elevation={0}
       sx={{
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: theme.palette.background.default,
         borderBottom: `1px solid ${theme.palette.divider}`,
-        backdropFilter: 'blur(8px)',
+        backdropFilter: 'blur(12px)',
       }}
     >
       <Toolbar sx={{ maxWidth: 1200, mx: 'auto', width: '100%' }}>
@@ -101,9 +80,9 @@ export function Header() {
             fontWeight: 600,
             letterSpacing: 0.5,
             color: theme.palette.primary.main,
-            opacity: 0.85,
-            transition: 'opacity 0.2s',
-            '&:hover': { opacity: 1 },
+            opacity: 0.9,
+            transition: 'opacity 0.2s ease, transform 0.2s ease',
+            '&:hover': { opacity: 1, transform: 'translateY(-1px)' },
           }}
         >
           <Terminal size={20} />
@@ -115,13 +94,16 @@ export function Header() {
           <Stack direction="row" spacing={3} sx={{ flex: 1, justifyContent: 'center' }}>
             {navItems.map(item => (
               <Button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
+                key={item.href}
+                component={RouterLink}
+                to={item.href}
+                onClick={handleCloseMenu}
                 sx={{
                   textTransform: 'none',
                   fontSize: '0.95rem',
-                  color: theme.palette.text.secondary,
-                  '&:hover': { color: theme.palette.primary.main },
+                  px: 1.25,
+                  color: isActiveRoute(item.href) ? theme.palette.primary.main : theme.palette.text.secondary,
+                  '&:hover': { color: theme.palette.primary.main, backgroundColor: 'transparent' },
                 }}
               >
                 {item.label}
@@ -173,7 +155,6 @@ export function Header() {
         ModalProps={{ keepMounted: true }}
         sx={{
           '& .MuiDrawer-paper': {
-            mt: '64px',
             backgroundColor: theme.palette.background.paper,
             borderBottom: `1px solid ${theme.palette.divider}`,
           },
@@ -183,12 +164,14 @@ export function Header() {
           <Stack spacing={2}>
             {navItems.map(item => (
               <Button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
+                key={item.href}
+                component={RouterLink}
+                to={item.href}
+                onClick={handleCloseMenu}
                 sx={{
                   justifyContent: 'flex-start',
                   textTransform: 'none',
-                  color: theme.palette.text.secondary,
+                  color: isActiveRoute(item.href) ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
               >
                 {item.label}
@@ -215,3 +198,5 @@ export function Header() {
     </AppBar>
   );
 }
+
+export default Header;

@@ -7,9 +7,10 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import { cmsApi } from '../../utils/cmsApi';
+import { renderSubjectIcon } from '../../utils/iconRenderer';
 import type { Subject } from '../../utils/dataTypes';
 
-interface SubjectSectionProps {
+interface SubjectFormProps {
   subjects: Subject[];
   reload: () => Promise<void>;
   setStatus: (status: string | null) => void;
@@ -21,10 +22,10 @@ const EMPTY_SUBJECT: Subject = {
   title: '',
   description: '',
   overview: '',
-  icon: '',
+  icon: null,
 };
 
-export function SubjectSection({ subjects, reload, setStatus, setStatusType}: SubjectSectionProps) {
+function SubjectForm({ subjects, reload, setStatus, setStatusType}: SubjectFormProps) {
   const [subjectForm, setSubjectForm] = useState<Subject>(EMPTY_SUBJECT);
   const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null);
 
@@ -117,15 +118,19 @@ export function SubjectSection({ subjects, reload, setStatus, setStatusType}: Su
             />
             <TextField
               label="Icon"
-              value={subjectForm.icon}
+              value={subjectForm.icon ?? ''}
               onChange={event =>
-                setSubjectForm(prev => ({ ...prev, icon: event.target.value }))
+                setSubjectForm(prev => ({
+                  ...prev,
+                  icon: event.target.value.trim() ? event.target.value : null,
+                }))
               }
+              helperText="Use emoji or lucide icon name (e.g. BookOpen or lucide:book-open)."
             />
             <TextField
               multiline
               minRows={5}
-              label="Overview (Markdown or HTML)"
+              label="Overview (Markdown only)"
               value={subjectForm.overview}
               onChange={event =>
                 setSubjectForm(prev => ({ ...prev, overview: event.target.value }))
@@ -163,7 +168,15 @@ export function SubjectSection({ subjects, reload, setStatus, setStatusType}: Su
                 spacing={1}
               >
                 <Box>
-                  <Typography fontWeight={600}>{subject.icon} {subject.title}</Typography>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', color: 'secondary.main' }}>
+                      {renderSubjectIcon(subject.icon, {
+                        size: 18,
+                        fallbackSize: '1rem',
+                      })}
+                    </Box>  
+                   <Typography fontWeight={600}> {subject.title} </Typography>
+                  </Stack>
                   <Typography variant="body2" color="text.secondary">
                     {subject.id}
                   </Typography>
@@ -188,3 +201,5 @@ export function SubjectSection({ subjects, reload, setStatus, setStatusType}: Su
     </Paper>
   )
 }
+
+export default SubjectForm;

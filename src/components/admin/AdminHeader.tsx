@@ -14,7 +14,7 @@ interface AdminHeaderProps {
   mode?: 'default' | 'hero'
 }
 
-export function AdminHeader({
+function AdminHeader({
   userEmail,
   onLoginClick,
   onLogout,
@@ -66,3 +66,5 @@ export function AdminHeader({
     </Paper>
   )
 }
+
+export default AdminHeader;

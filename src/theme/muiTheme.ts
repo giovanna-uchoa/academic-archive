@@ -1,147 +1,82 @@
-import { createTheme, ThemeOptions } from '@mui/material/styles';
+import { ThemeOptions } from '@mui/material/styles';
 
-export const themeOptions: ThemeOptions = {
-  palette: {
-    primary: {
-      main: '#3d2817', // Dark brown (light mode primary)
-      light: '#826b5a', // Medium brown
-      dark: '#2a1f1a', // Darker brown
-      contrastText: '#f5e6d3', // Light tan
-    },
-    secondary: {
-      main: '#8b6f47', // Tan/gold accent
-      light: '#c4a57b', // Light gold for dark mode
-      dark: '#6b5444', // Darker tan
-      contrastText: '#fff',
-    },
-    background: {
-      default: '#faf8f5', // Light background
-      paper: '#fff', // Card/paper background
-    },
-    error: {
-      main: '#d32f2f',
-    },
-    warning: {
-      main: '#f57c00',
-    },
-    info: {
-      main: '#1976d2',
-    },
-    success: {
-      main: '#388e3c',
-    },
-    text: {
-      primary: '#3d2817',
-      secondary: '#826b5a',
-      disabled: '#b89968',
-    },
-    divider: '#e8ddd0',
-    mode: 'light',
+const headingFont = ['"Spectral"', '"Palatino Linotype"', '"Book Antiqua"', 'Palatino', 'serif'].join(',');
+const bodyFont = ['"Avenir Next"', '"Segoe UI"', '"Helvetica Neue"', 'sans-serif'].join(',');
+
+const sharedTypography: ThemeOptions['typography'] = {
+  fontFamily: bodyFont,
+  h1: {
+    fontFamily: headingFont,
+    fontWeight: 600,
+    lineHeight: 1.1,
+    letterSpacing: '-0.02em',
   },
-  typography: {
-    fontFamily: [
-      'ui-sans-serif',
-      'system-ui',
-      'sans-serif',
-      '"Apple Color Emoji"',
-      '"Segoe UI Emoji"',
-      '"Segoe UI Symbol"',
-      '"Noto Color Emoji"',
-    ].join(','),
-    h1: {
-      fontSize: '2.25rem',
-      fontWeight: 600,
-      lineHeight: 1.111,
-      color: '#3d2817',
-    },
-    h2: {
-      fontSize: '1.875rem',
-      fontWeight: 600,
-      lineHeight: 1.2,
-      color: '#3d2817',
-    },
-    h3: {
-      fontSize: '1.5rem',
-      fontWeight: 600,
-      lineHeight: 1.333,
-      color: '#3d2817',
-    },
-    h4: {
-      fontSize: '1.25rem',
-      fontWeight: 600,
-      lineHeight: 1.4,
-      color: '#3d2817',
-    },
-    h5: {
-      fontSize: '1.125rem',
-      fontWeight: 600,
-      lineHeight: 1.556,
-      color: '#3d2817',
-    },
-    h6: {
-      fontSize: '1rem',
-      fontWeight: 600,
-      lineHeight: 1.5,
-      color: '#3d2817',
-    },
-    body1: {
-      fontSize: '1rem',
-      lineHeight: 1.5,
-      color: '#826b5a',
-    },
-    body2: {
-      fontSize: '0.875rem',
-      lineHeight: 1.25,
-      color: '#826b5a',
-    },
-    button: {
-      textTransform: 'none',
-      fontWeight: 500,
-    },
+  h2: {
+    fontFamily: headingFont,
+    fontWeight: 600,
+    lineHeight: 1.16,
+    letterSpacing: '-0.01em',
   },
-  components: {
+  h3: {
+    fontFamily: headingFont,
+    fontWeight: 600,
+    lineHeight: 1.2,
+  },
+  h4: {
+    fontFamily: headingFont,
+    fontWeight: 600,
+    lineHeight: 1.25,
+  },
+  h5: {
+    fontFamily: headingFont,
+    fontWeight: 600,
+    lineHeight: 1.3,
+  },
+  h6: {
+    fontFamily: headingFont,
+    fontWeight: 600,
+    lineHeight: 1.35,
+  },
+  body1: {
+    lineHeight: 1.7,
+  },
+  body2: {
+    lineHeight: 1.55,
+  },
+  overline: {
+    fontWeight: 600,
+    letterSpacing: '0.12em',
+  },
+  button: {
+    textTransform: 'none',
+    fontWeight: 500,
+  },
+};
+
+function sharedComponents(mode: 'light' | 'dark'): ThemeOptions['components'] {
+  const isLight = mode === 'light';
+  const darkBorder = '#2b3847';
+  const darkHover = '#d39a5f';
+
+  return {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: '0.5rem',
-          textTransform: 'none',
-          fontWeight: 500,
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        },
-        contained: {
-          backgroundColor: '#8b6f47',
-          color: '#fff',
-          '&:hover': {
-            backgroundColor: '#6b5444',
-          },
-        },
-        outlined: {
-          borderColor: '#d4c4b0',
-          color: '#6b5444',
-          '&:hover': {
-            backgroundColor: '#f4ede4',
-            borderColor: '#c4a57b',
-          },
-        },
-      },
-    },
-    MuiContainer: {
-      styleOverrides: {
-        root: {
-          backgroundColor: 'transparent',
+          borderRadius: 8,
+          transition: 'all 0.2s ease',
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: '#fff',
-          borderColor: '#e8ddd0',
-          border: '1px solid #e8ddd0',
-          borderRadius: '0.5rem',
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          borderRadius: 10,
+          border: `1px solid ${isLight ? '#e6dbc9' : darkBorder}`,
+          boxShadow: 'none',
+          transition: 'border-color 0.2s ease, transform 0.2s ease',
           '&:hover': {
-            borderColor: '#8b6f47',
+            borderColor: isLight ? '#b08a5a' : darkHover,
+            transform: 'translateY(-1px)',
           },
         },
       },
@@ -149,197 +84,76 @@ export const themeOptions: ThemeOptions = {
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundColor: '#fff',
-          borderColor: '#e8ddd0',
+          backgroundImage: 'none',
         },
       },
     },
-    MuiDivider: {
+    MuiChip: {
       styleOverrides: {
         root: {
-          borderColor: '#e8ddd0',
+          borderRadius: 7,
         },
       },
     },
-    MuiBadge: {
-      styleOverrides: {
-        standard: {
-          backgroundColor: '#f4ede4',
-          color: '#6b5444',
-        },
-      },
+  };
+}
+
+export const themeOptions: ThemeOptions = {
+  palette: {
+    primary: {
+      main: '#2f2418',
+      light: '#64513f',
+      dark: '#1c140d',
+      contrastText: '#fffefb',
     },
+    secondary: {
+      main: '#9f6a2f',
+      light: '#d2a16d',
+      dark: '#72491f',
+      contrastText: '#fff',
+    },
+    background: {
+      default: '#f7f3ec',
+      paper: '#fffcf6',
+    },
+    text: {
+      primary: '#33251a',
+      secondary: '#6a5746',
+      disabled: '#9e8c79',
+    },
+    divider: '#e6dbc9',
+    mode: 'light',
   },
+  typography: sharedTypography,
+  components: sharedComponents('light'),
 };
 
 export const darkThemeOptions: ThemeOptions = {
   palette: {
     primary: {
-      main: '#f5e6d3', // Light tan (dark mode primary)
-      light: '#c4a57b', // Light gold
-      dark: '#3d2817', // Dark brown
-      contrastText: '#1a1310',
+      main: '#dce8f4',
+      light: '#f4f8fc',
+      dark: '#8ea1b6',
+      contrastText: '#0b121a',
     },
     secondary: {
-      main: '#c4a57b', // Light gold accent
-      light: '#f5e6d3', // Light tan
-      dark: '#8b6f47', // Darker gold
-      contrastText: '#1a1310',
+      main: '#d39a5f',
+      light: '#e8c29a',
+      dark: '#b67839',
+      contrastText: '#0b121a',
     },
     background: {
-      default: '#1a1310', // Dark background
-      paper: '#2a1f1a', // Dark card background
-    },
-    error: {
-      main: '#ff5252',
-    },
-    warning: {
-      main: '#ffb74d',
-    },
-    info: {
-      main: '#42a5f5',
-    },
-    success: {
-      main: '#66bb6a',
+      default: '#0b121a',
+      paper: '#111b26',
     },
     text: {
-      primary: '#f5e6d3',
-      secondary: '#b89968',
-      disabled: '#826b5a',
+      primary: '#e8f1fb',
+      secondary: '#a8bdd4',
+      disabled: '#6e8399',
     },
-    divider: '#3d2f26',
+    divider: '#2b3847',
     mode: 'dark',
   },
-  typography: {
-    fontFamily: [
-      'ui-sans-serif',
-      'system-ui',
-      'sans-serif',
-      '"Apple Color Emoji"',
-      '"Segoe UI Emoji"',
-      '"Segoe UI Symbol"',
-      '"Noto Color Emoji"',
-    ].join(','),
-    h1: {
-      fontSize: '2.25rem',
-      fontWeight: 600,
-      lineHeight: 1.111,
-      color: '#f5e6d3',
-    },
-    h2: {
-      fontSize: '1.875rem',
-      fontWeight: 600,
-      lineHeight: 1.2,
-      color: '#f5e6d3',
-    },
-    h3: {
-      fontSize: '1.5rem',
-      fontWeight: 600,
-      lineHeight: 1.333,
-      color: '#f5e6d3',
-    },
-    h4: {
-      fontSize: '1.25rem',
-      fontWeight: 600,
-      lineHeight: 1.4,
-      color: '#f5e6d3',
-    },
-    h5: {
-      fontSize: '1.125rem',
-      fontWeight: 600,
-      lineHeight: 1.556,
-      color: '#f5e6d3',
-    },
-    h6: {
-      fontSize: '1rem',
-      fontWeight: 600,
-      lineHeight: 1.5,
-      color: '#f5e6d3',
-    },
-    body1: {
-      fontSize: '1rem',
-      lineHeight: 1.5,
-      color: '#b89968',
-    },
-    body2: {
-      fontSize: '0.875rem',
-      lineHeight: 1.25,
-      color: '#b89968',
-    },
-    button: {
-      textTransform: 'none',
-      fontWeight: 500,
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: '0.5rem',
-          textTransform: 'none',
-          fontWeight: 500,
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        },
-        contained: {
-          backgroundColor: '#c4a57b',
-          color: '#1a1310',
-          '&:hover': {
-            backgroundColor: '#f5e6d3',
-          },
-        },
-        outlined: {
-          borderColor: '#4a3a2e',
-          color: '#c4a57b',
-          '&:hover': {
-            backgroundColor: '#3d2f26',
-            borderColor: '#8b6f47',
-          },
-        },
-      },
-    },
-    MuiContainer: {
-      styleOverrides: {
-        root: {
-          backgroundColor: 'transparent',
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          backgroundColor: '#2a1f1a',
-          borderColor: '#3d2f26',
-          border: '1px solid #3d2f26',
-          borderRadius: '0.5rem',
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            borderColor: '#c4a57b',
-          },
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundColor: '#2a1f1a',
-          borderColor: '#3d2f26',
-        },
-      },
-    },
-    MuiDivider: {
-      styleOverrides: {
-        root: {
-          borderColor: '#3d2f26',
-        },
-      },
-    },
-    MuiBadge: {
-      styleOverrides: {
-        standard: {
-          backgroundColor: '#3d2f26',
-          color: '#c4a57b',
-        },
-      },
-    },
-  },
+  typography: sharedTypography,
+  components: sharedComponents('dark'),
 };

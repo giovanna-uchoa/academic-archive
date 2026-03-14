@@ -4,15 +4,16 @@ import Stack from '@mui/material/Stack'
 import CircularProgress from '@mui/material/CircularProgress'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
-import { AdminHeader } from '@/components/admin/AdminHeader'
-import { SubjectSection } from '@/components/admin/SubjectSection'
-import { PostSection } from '@/components/admin/PostSection'
-import { useCmsContent } from '@/utils/useCmsContent'
-import { LoginDialog } from '@/components/admin/LoginDialog'
-import { supabase } from '@/utils/supabaseClient'
+import AdminHeader from '../../components/admin/AdminHeader'
+import LoginDialog from '../../components/admin/LoginDialog'
+import SubjectForm from '../../components/admin/SubjectForm'
+import PostForm from '../../components/admin/PostForm'
+import TagForm from '../../components/admin/TagForm'
+import { useCmsContent } from '../../utils/useCmsContent'
+import { supabase } from '../../utils/supabaseClient'
 
 function AdminPage() {
-  const { subjects, posts, loading, error, reload } = useCmsContent()
+  const { subjects, posts, tags, loading, error, reload } = useCmsContent()
 
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
@@ -20,7 +21,7 @@ function AdminPage() {
   const [statusType, setStatusType] =
     useState<'success' | 'error'>('success')
   const [activeSection, setActiveSection] =
-    useState<'subjects' | 'posts'>('subjects')
+    useState<'subjects' | 'posts' | 'tags'>('subjects')
 
   useEffect(() => {
     const {
@@ -103,26 +104,35 @@ function AdminPage() {
             <>
               <Tabs
                 value={activeSection}
-                onChange={(_event, value: 'subjects' | 'posts') =>
+                onChange={(_event, value: 'subjects' | 'posts' | 'tags') =>
                   setActiveSection(value)
                 }
                 aria-label="Admin sections"
               >
                 <Tab label="Subjects" value="subjects" />
                 <Tab label="Posts" value="posts" />
+                <Tab label="Tags" value="tags" />
               </Tabs>
 
               {activeSection === 'subjects' ? (
-                <SubjectSection
+                <SubjectForm
                   subjects={subjects}
                   reload={reload}
                   setStatus={setStatus}
                   setStatusType={setStatusType}
                 />
-              ) : (
-                <PostSection
+              ) : activeSection === 'posts' ? (
+                <PostForm
                   posts={sortedPosts}
                   subjects={subjects}
+                  tags={tags}
+                  reload={reload}
+                  setStatus={setStatus}
+                  setStatusType={setStatusType}
+                />
+              ) : (
+                <TagForm
+                  tags={tags}
                   reload={reload}
                   setStatus={setStatus}
                   setStatusType={setStatusType}
