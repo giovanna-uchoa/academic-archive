@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Terminal, Github, Linkedin, Mail, Menu, X } from 'lucide-react';
+import { Terminal, Github, Linkedin, Gitlab, Mail, Menu, X } from 'lucide-react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -15,6 +15,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 // ENV CONFIG
 const appName = import.meta.env.VITE_APP_NAME ?? 'App';
 const githubUrl = import.meta.env.VITE_GITHUB_URL;
+const gitlabUrl = import.meta.env.VITE_GITLAB_URL;
 const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL;
 const email = import.meta.env.VITE_USER_EMAIL;
 
@@ -40,6 +41,7 @@ function Header() {
     () =>
       [
         { href: githubUrl, icon: Github, label: 'GitHub' },
+        { href: gitlabUrl, icon: Gitlab, label: 'Gitlab' },
         { href: linkedinUrl, icon: Linkedin, label: 'LinkedIn' },
         { href: email ? `mailto:${email}` : undefined, icon: Mail, label: 'Email' },
       ].filter(link => link.href),
