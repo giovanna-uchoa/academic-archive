@@ -4,16 +4,18 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import { cmsApi } from '../../utils/cmsApi';
-import type { Post, Subject } from '../../utils/dataTypes';
+import type { Post, Subject, Tag } from '../../utils/dataTypes';
 import { normalizePostDate } from '../../utils/contentTaxonomy';
 
 interface PostFormProps {
   posts: Post[];
   subjects: Subject[];
+  tags: Tag[];
   reload: () => Promise<void>;
   setStatus: (status: string | null) => void;
   setStatusType: (type: 'success' | 'error') => void;
@@ -26,7 +28,7 @@ interface PostFormState {
   date: string;
   timeSpent: string;
   subjectId: string;
-  tagsInput: string;
+  selectedTags: string[];
 }
 
 const EMPTY_POST = {
@@ -36,17 +38,10 @@ const EMPTY_POST = {
   date: '',
   timeSpent: '',
   subjectId: '',
-  tagsInput: '',
+  selectedTags: [],
 } satisfies PostFormState;
 
-function parseTagsInput(value: string): string[] {
-  return value
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(Boolean);
-}
-
-function PostForm({ posts, subjects, reload, setStatus, setStatusType}: PostFormProps) {
+function PostForm({ posts, subjects, tags, reload, setStatus, setStatusType}: PostFormProps) {
   const [postForm, setPostForm] = useState(EMPTY_POST);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
 
@@ -76,7 +71,7 @@ function PostForm({ posts, subjects, reload, setStatus, setStatusType}: PostForm
       date: normalizedDate,
       timeSpent: postForm.timeSpent,
       subjectId: postForm.subjectId,
-      tags: parseTagsInput(postForm.tagsInput),
+      tags: postForm.selectedTags,
     };
 
     try {
@@ -108,7 +103,7 @@ function PostForm({ posts, subjects, reload, setStatus, setStatusType}: PostForm
       date: normalizePostDate(post.date) ?? post.date,
       timeSpent: post.timeSpent,
       subjectId: post.subjectId,
-      tagsInput: (post.tags ?? []).join(', '),
+      selectedTags: post.tags ?? [],
     });
     clearStatus();
   };
@@ -197,13 +192,20 @@ function PostForm({ posts, subjects, reload, setStatus, setStatusType}: PostForm
                 }
               />
             </Stack>
-            <TextField
-              label="Tags (comma separated)"
-              value={postForm.tagsInput}
-              onChange={event =>
-                setPostForm(prev => ({ ...prev, tagsInput: event.target.value }))
-              }
-              helperText="Example: ai, machine-learning, portfolio"
+            <Autocomplete
+              multiple
+              options={tags.map((tag) => tag.name)}
+              value={postForm.selectedTags}
+              onChange={(_event, value) => {
+                setPostForm((prev) => ({ ...prev, selectedTags: value }));
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Tags"
+                  helperText="Select one or more tags from the managed tag list."
+                />
+              )}
             />
             <TextField
               multiline
@@ -251,9 +253,9 @@ function PostForm({ posts, subjects, reload, setStatus, setStatusType}: PostForm
                   <Typography variant="body2" color="text.secondary">
                     #{post.id} · {subjectById.get(post.subjectId)?.title || post.subjectId}
                   </Typography>
-                  {(post.tags?.length ?? 0) > 0 && (
+                  {post.tags.length > 0 && (
                     <Typography variant="body2" color="text.secondary">
-                      Tags: {(post.tags ?? []).join(', ')}
+                      Tags: {post.tags.join(', ')}
                     </Typography>
                   )}
                 </Box>

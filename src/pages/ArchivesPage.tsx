@@ -124,9 +124,6 @@ export default function ArchivesPage() {
                                 clickable
                                 size="small"
                               />
-                              <Typography variant="caption" color="text.secondary">
-                                {formatPostDate(post.date)}
-                              </Typography>
                             </Stack>
                           </Stack>
                         ))}

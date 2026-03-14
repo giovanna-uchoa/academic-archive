@@ -11,9 +11,9 @@ Original UI inspired by [Figma – Personal Tech Portfolio Blog (Community)](htt
 ## Features
 
 - Browse posts grouped by **subject** or explore all entries in the **catalog**
-- **Tag system** — tag posts inline (via `#hashtag` in content) or explicitly; filter by tag at `/tags/:tagSlug`
+- **Tag system** — normalized `tags` + `post_tags` tables; assign tags to posts and filter at `/tags/:tagSlug`
 - **Archives** — posts grouped by year/month
-- **Admin panel** at `/#/admin` — create, edit, and delete subjects and posts (requires Supabase auth)
+- **Admin panel** at `/#/admin` — create, edit, and delete subjects, posts, and tags (requires Supabase auth)
 - Dark / light theme toggle
 - Markdown rendering with GFM support (tables, strikethrough, task lists)
 
@@ -67,7 +67,7 @@ src/
     ThemeProvider.tsx
   utils/
     cmsApi.ts                 # Supabase CRUD + date normalisation
-    contentTaxonomy.ts        # Tag extraction, archive grouping, date parsing
+    contentTaxonomy.ts        # Tag/category summary, archive grouping, date parsing
     dataTypes.ts              # Shared TypeScript types
     supabaseClient.ts         # Supabase client init
     useCmsContent.ts          # Data-fetching hook
@@ -77,6 +77,7 @@ migrations/
   20260308_access_policies.sql
   20260313_tags_and_optional_subject_icon.sql
   20260314_posts_date_to_sql_date.sql
+  20260314_normalize_tags_to_relational_tables.sql
 ```
 
 ## Getting started

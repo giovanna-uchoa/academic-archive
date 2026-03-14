@@ -11,9 +11,9 @@ import BlogCard from '../components/blog/BlogCard';
 
 export default function TagPage() {
   const { tagSlug } = useParams<{ tagSlug: string }>();
-  const { posts, subjects, loading, error } = useCmsContent();
+  const { posts, loading, error } = useCmsContent();
 
-  const postTags = buildPostTags(posts, subjects);
+  const postTags = buildPostTags(posts);
   const filteredPosts = posts.filter((post) => {
     const tags = postTags[post.id] ?? [];
     return tags.some((tag) => toTagSlug(tag) === tagSlug);

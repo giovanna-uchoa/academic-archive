@@ -8,8 +8,9 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import { cmsApi } from '../../utils/cmsApi';
 import type { Post } from '../../utils/dataTypes';
-import { formatPostDate, getPostTags, getPostSubjectTitle, toTagSlug } from '../../utils/contentTaxonomy';
+import { formatPostDate, getPostTags, toTagSlug } from '../../utils/contentTaxonomy';
 import MarkdownContent from '../MarkdownContent';
 
 interface BlogPostProps {
@@ -24,7 +25,7 @@ function BlogPost({ post, subjectTitle, onBack, backLabel = 'Back to all posts' 
   const tags = getPostTags(post);
   const formattedDate = formatPostDate(post.date);
   const timeSpent = post.timeSpent?.trim() || 'Time spent not specified';
-  const [mainCategory, setMainCategory] = useState<string | null>(null);
+  const [mainCategory, setMainCategory] = useState<string>(subjectTitle ?? post.subjectId);
 
   useEffect(() => {
     if (subjectTitle) {
@@ -32,8 +33,27 @@ function BlogPost({ post, subjectTitle, onBack, backLabel = 'Back to all posts' 
       return;
     }
 
-    getPostSubjectTitle(post).then(setMainCategory);
-  }, [post, subjectTitle]);
+    let cancelled = false;
+
+    async function loadSubjectTitle() {
+      try {
+        const subject = await cmsApi.getSubject(post.subjectId);
+        if (!cancelled) {
+          setMainCategory(subject?.title ?? post.subjectId);
+        }
+      } catch {
+        if (!cancelled) {
+          setMainCategory(post.subjectId);
+        }
+      }
+    }
+
+    void loadSubjectTitle();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [post.subjectId, subjectTitle]);
 
   return (
     <Box

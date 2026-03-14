@@ -1,5 +1,4 @@
-import type { ArchiveGroup, CategorySummary, Post, Subject, TagSummary} from './dataTypes';
-import { cmsApi } from './cmsApi';
+import type { ArchiveGroup, CategorySummary, Post, Subject } from './dataTypes';
 
 export function getPostPath(post: Pick<Post, 'id' | 'subjectId'>): string {
   return `/subjects/${post.subjectId}/post/${post.id}`;
@@ -15,7 +14,7 @@ function parsePostDateParts(value: string): PostDateParts | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
 
-  const ymd = trimmed.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);
+  const ymd = trimmed.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
   if (!ymd) return null;
 
   const year = Number(ymd[1]);
@@ -69,11 +68,6 @@ export function getPostDate(post: Post): Date {
   return parseDateToken(post.date) ?? new Date(0);
 }
 
-export async function getPostSubjectTitle(post: Post): Promise<string> {
-  const subject = await cmsApi.getSubject(post.subjectId);
-  return subject?.title ?? post.subjectId 
-}
-
 export function sortPostsByDateDesc(posts: Post[]): Post[] {
   return [...posts].sort((a, b) => getPostDate(b).getTime() - getPostDate(a).getTime());
 }
@@ -100,15 +94,6 @@ function normalizeTag(rawTag: string): string {
     .replace(/^-|-$/g, '');
 }
 
-function extractHashtags(post: Post): string[] {
-  const source = [post.title, post.excerpt, post.content].join(' ');
-  const matches = source.match(/(^|\s)#([a-zA-Z0-9_-]+)/g) ?? [];
-
-  return matches
-    .map((match) => match.replace(/^\s*#/, '').trim())
-    .filter(Boolean);
-}
-
 export function getPostTags(post: Post): string[] {
   const tags = new Set<string>();
 
@@ -119,14 +104,10 @@ export function getPostTags(post: Post): string[] {
     }
   }
 
-  for (const hashtag of extractHashtags(post)) {
-    tags.add(hashtag);
-  }
-
   return [...tags];
 }
 
-export function buildPostTags(posts: Post[], _subjects: Subject[]): Record<number, string[]> {
+export function buildPostTags(posts: Post[]): Record<number, string[]> {
   const index: Record<number, string[]> = {};
 
   for (const post of posts) {
@@ -134,38 +115,6 @@ export function buildPostTags(posts: Post[], _subjects: Subject[]): Record<numbe
   }
 
   return index;
-}
-
-export function buildTagSummary(posts: Post[], subjects: Subject[]): TagSummary[] {
-  const postTags = buildPostTags(posts, subjects);
-  const usage = new Map<string, { label: string; count: number }>();
-
-  for (const post of posts) {
-    const tags = postTags[post.id] ?? [];
-
-    for (const rawTag of tags) {
-      const slug = normalizeTag(rawTag);
-      if (!slug) continue;
-
-      const existing = usage.get(slug);
-      if (existing) {
-        existing.count += 1;
-      } else {
-        usage.set(slug, {
-          label: slug,
-          count: 1,
-        });
-      }
-    }
-  }
-
-  return [...usage.entries()]
-    .map(([slug, value]) => ({
-      slug,
-      label: value.label,
-      totalPosts: value.count,
-    }))
-    .sort((a, b) => b.totalPosts - a.totalPosts || a.label.localeCompare(b.label));
 }
 
 export function buildArchiveGroups(posts: Post[]): ArchiveGroup[] {
@@ -181,7 +130,7 @@ export function buildArchiveGroups(posts: Post[]): ArchiveGroup[] {
       groups.set(key, {
         year,
         month,
-        label: date.toLocaleString('en-US', {
+        label: date.toLocaleString(undefined, {
           month: 'long',
           year: 'numeric',
         }),
@@ -199,7 +148,14 @@ export function buildArchiveGroups(posts: Post[]): ArchiveGroup[] {
 }
 
 export function formatPostDate(value: string): string {
-  return normalizePostDate(value) ?? value;
+  const parsed = parseDateToken(value);
+  if (!parsed) return normalizePostDate(value) ?? value;
+
+  return new Intl.DateTimeFormat(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(parsed);
 }
 
 export function toTagSlug(value: string): string {

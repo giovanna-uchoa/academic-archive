@@ -14,7 +14,13 @@ export interface Post {
   date: string;
   timeSpent: string;
   subjectId: string;
-  tags?: string[] | null;
+  tags: string[];
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
 }
 
 export interface CategorySummary {

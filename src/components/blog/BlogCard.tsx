@@ -1,5 +1,4 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Clock, Hash } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
@@ -7,7 +6,7 @@ import CardContent from '@mui/material/CardContent';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { Post } from '../../utils/dataTypes';
-import { formatPostDate, getPostTags, toTagSlug } from '../../utils/contentTaxonomy';
+import { formatPostDate } from '../../utils/contentTaxonomy';
 
 interface BlogCardProps {
   post: Post;
@@ -16,7 +15,6 @@ interface BlogCardProps {
 
 function BlogCard({ post, onSelectRedirectTo }: BlogCardProps) {
   const theme = useTheme();
-  const tags = getPostTags(post).slice(0, 4);
 
   return (
     <Card

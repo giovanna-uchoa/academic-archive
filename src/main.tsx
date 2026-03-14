@@ -14,8 +14,7 @@ createRoot(document.getElementById("root")!).render(
 declare global {
   interface ImportMeta {
     env: {
-      VITE_APP_NAME: string;
-      [key: string]: any;
+      [key: string]: string;
     };
   }
 }

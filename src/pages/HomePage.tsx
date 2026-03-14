@@ -10,7 +10,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useCmsContent } from '../utils/useCmsContent';
 import {
   buildCategorySummary,
-  buildTagSummary,
   sortPostsByDateDesc,
 } from '../utils/contentTaxonomy';
 import { renderSubjectIcon } from '../utils/iconRenderer';
@@ -19,7 +18,7 @@ import Hero from '../components/Hero';
 import BlogCard from '../components/blog/BlogCard';
 
 function HomePage() {
-  const { posts, subjects, loading, error } = useCmsContent();
+  const { posts, subjects, tagSummary, loading, error } = useCmsContent();
 
   if (loading) {
     return (
@@ -36,7 +35,7 @@ function HomePage() {
   const orderedPosts = sortPostsByDateDesc(posts);
   const recentPosts = orderedPosts.slice(0, 6);
   const categories = buildCategorySummary(subjects, posts).slice(0, 6);
-  const tags = buildTagSummary(posts, subjects).slice(0, 12);
+  const tags = tagSummary.slice(0, 12);
 
   return (
     <Stack spacing={4}>

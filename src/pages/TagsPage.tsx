@@ -9,11 +9,10 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useCmsContent } from '../utils/useCmsContent';
-import { buildTagSummary } from '../utils/contentTaxonomy';
 
 export default function TagsPage() {
-  const { posts, subjects, loading, error } = useCmsContent();
-  const tags = buildTagSummary(posts, subjects);
+  const { tagSummary, loading, error } = useCmsContent();
+  const tags = tagSummary;
 
   if (loading) {
     return (
