@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Terminal, Github, Linkedin, Gitlab, Mail, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -8,16 +8,12 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Drawer from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
-import Link from '@mui/material/Link';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
-// ENV CONFIG
-const appName = import.meta.env.VITE_APP_NAME ?? 'App';
-const githubUrl = import.meta.env.VITE_GITHUB_URL;
-const gitlabUrl = import.meta.env.VITE_GITLAB_URL;
-const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL;
-const email = import.meta.env.VITE_USER_EMAIL;
+import Logo from './ui/Logo';
+import ThemeToggle from './ui/ThemeToggle';
+import SocialLinks from './ui/SocialLinks';
 
 function Header() {
   const location = useLocation();
@@ -34,18 +30,6 @@ function Header() {
       { label: 'Tags', href: '/tags' },
     ],
     []
-  );
-
-  // SOCIAL LINKS
-  const socialLinks = useMemo(
-    () =>
-      [
-        { href: githubUrl, icon: Github, label: 'GitHub' },
-        { href: gitlabUrl, icon: Gitlab, label: 'Gitlab' },
-        { href: linkedinUrl, icon: Linkedin, label: 'LinkedIn' },
-        { href: email ? `mailto:${email}` : undefined, icon: Mail, label: 'Email' },
-      ].filter(link => link.href),
-    [githubUrl, linkedinUrl, email]
   );
 
   const handleCloseMenu = () => setMobileMenuOpen(false);
@@ -66,32 +50,11 @@ function Header() {
       }}
     >
       <Toolbar sx={{ maxWidth: 1200, mx: 'auto', width: '100%' }}>
-        {/* Logo */}
-        <Link
-          component={RouterLink}
-          to="/"
-          underline="none"
-          onClick={handleCloseMenu}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            flex: 1,
-            fontWeight: 600,
-            letterSpacing: 0.5,
-            color: theme.palette.primary.main,
-            opacity: 0.9,
-            transition: 'opacity 0.2s ease, transform 0.2s ease',
-            '&:hover': { opacity: 1, transform: 'translateY(-1px)' },
-          }}
-        >
-          <Terminal size={20} />
-          {appName}
-        </Link>
+        <Logo onClick={handleCloseMenu} />
 
         {/* Desktop Navigation */}
         {!isMobile && (
-          <Stack direction="row" spacing={3} sx={{ flex: 1, justifyContent: 'center' }}>
+          <Box sx={{ flex: 2, display: 'flex', gap: 3, justifyContent: 'center' }}>
             {navItems.map(item => (
               <Button
                 key={item.href}
@@ -101,7 +64,6 @@ function Header() {
                 sx={{
                   textTransform: 'none',
                   fontSize: '0.95rem',
-                  px: 1.25,
                   color: isActiveRoute(item.href) ? theme.palette.primary.main : theme.palette.text.secondary,
                   '&:hover': { color: theme.palette.primary.main, backgroundColor: 'transparent' },
                 }}
@@ -109,41 +71,29 @@ function Header() {
                 {item.label}
               </Button>
             ))}
-          </Stack>
+          </Box>
         )}
 
         {/* Desktop Social */}
         {!isMobile && (
-          <Stack direction="row" spacing={1}>
-            {socialLinks.map(({ href, icon: Icon, label }) => (
-              <IconButton
-                key={label}
-                component="a"
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer external"
-                aria-label={label}
-                size="small"
-                sx={{
-                  color: theme.palette.text.secondary,
-                  '&:hover': { color: theme.palette.primary.main },
-                }}
-              >
-                <Icon size={18} />
-              </IconButton>
-            ))}
+          <Stack direction="row" spacing={1} alignItems="center">
+            <SocialLinks />
+            <ThemeToggle />
           </Stack>
         )}
 
-        {/* Mobile Toggle */}
+        {/* Mobile: theme toggle + hamburger */}
         {isMobile && (
-          <IconButton
-            onClick={() => setMobileMenuOpen(prev => !prev)}
-            aria-label="Toggle menu"
-            sx={{ color: theme.palette.text.secondary }}
-          >
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-          </IconButton>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <ThemeToggle />
+            <IconButton
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+              aria-label="Toggle menu"
+              sx={{ color: theme.palette.text.secondary }}
+            >
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </IconButton>
+          </Stack>
         )}
       </Toolbar>
 
@@ -179,20 +129,7 @@ function Header() {
             ))}
           </Stack>
 
-          <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-            {socialLinks.map(({ href, icon: Icon, label }) => (
-              <IconButton
-                key={label}
-                component="a"
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer external"
-                aria-label={label}
-              >
-                <Icon size={18} />
-              </IconButton>
-            ))}
-          </Stack>
+          <SocialLinks sx={{ mt: 3 }}/>
         </Box>
       </Drawer>
     </AppBar>
