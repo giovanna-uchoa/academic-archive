@@ -30,13 +30,18 @@ function SubjectPage() {
     async function load() {
       try {
         setLoading(true);
+        setError(null);
 
-        const [subjectData, postsData] = await Promise.all([
-          cmsApi.getSubject(subjectId || ''),
-          cmsApi.listPostsBySubjectId(subjectId || ''),
-        ]);
+        const subjectData = await cmsApi.getSubject(subjectId || '');
 
         setSubject(subjectData);
+
+        if (!subjectData?.blogEnabled) {
+          setPosts([]);
+          return;
+        }
+
+        const postsData = await cmsApi.listPostsBySubjectId(subjectId || '');
         setPosts(postsData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load content');
@@ -134,7 +139,9 @@ function SubjectPage() {
 
         {subject.overview && <MarkdownContent content={subject.overview} />}
 
-        <BlogSection subject={subject} subjectPosts={posts} />
+        {subject.blogEnabled && (
+          <BlogSection subject={subject} subjectPosts={posts} />
+        )}
       </Box>
     </Box>
   );

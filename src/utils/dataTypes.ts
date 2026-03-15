@@ -4,6 +4,8 @@ export interface Subject {
   description: string;
   overview: string;
   icon?: string | null;
+  blogEnabled: boolean;
+  blogSectionTitle: string;
 }
 
 export interface Post {

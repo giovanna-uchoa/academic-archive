@@ -27,6 +27,18 @@ interface DbTagSummaryRow {
   post_tags?: Array<{ tag_id: number }> | null
 }
 
+interface DbSubjectRow {
+  id: string
+  title: string
+  description: string
+  overview: string
+  icon?: string | null
+  blogEnabled?: boolean | null
+  blogSectionTitle?: string | null
+}
+
+const DEFAULT_BLOG_SECTION_TITLE = 'Articles & Experiments'
+
 async function ensureAuthenticated() {
   const { data } = await supabase.auth.getUser()
   if (!data.user) {
@@ -71,6 +83,31 @@ function mapPostForDb(post: Omit<Post, 'id'>): Omit<Post, 'id' | 'tags'> {
 
 function normalizeTagName(value: string): string {
   return value.trim().replace(/\s+/g, ' ')
+}
+
+function normalizeBlogSectionTitle(value: string | null | undefined): string {
+  const cleaned = value?.trim() ?? ''
+  return cleaned || DEFAULT_BLOG_SECTION_TITLE
+}
+
+function mapSubjectFromDb(subject: DbSubjectRow): Subject {
+  return {
+    id: subject.id,
+    title: subject.title,
+    description: subject.description,
+    overview: subject.overview,
+    icon: subject.icon ?? null,
+    blogEnabled: subject.blogEnabled ?? true,
+    blogSectionTitle: normalizeBlogSectionTitle(subject.blogSectionTitle),
+  }
+}
+
+function mapSubjectForDb(subject: Subject | Omit<Subject, 'id'>) {
+  return {
+    ...subject,
+    blogEnabled: subject.blogEnabled ?? true,
+    blogSectionTitle: normalizeBlogSectionTitle(subject.blogSectionTitle),
+  }
 }
 
 function toTagSlug(value: string): string {
@@ -158,7 +195,7 @@ export const cmsApi = {
       .order('created_at', { ascending: true })
 
     if (error) throw new Error(error.message)
-    return data ?? []
+    return (data ?? []).map((subject) => mapSubjectFromDb(subject as DbSubjectRow))
   },
 
   async getSubject(subjectId: string): Promise<Subject | null> {
@@ -169,7 +206,7 @@ export const cmsApi = {
       .single()
 
     if (error) throw new Error(error.message)
-    return data
+    return data ? mapSubjectFromDb(data as DbSubjectRow) : null
   },
 
   async listPosts(): Promise<Post[]> {
@@ -241,14 +278,16 @@ export const cmsApi = {
   async createSubject(subject: Subject): Promise<Subject> {
     await ensureAuthenticated()
 
+    const payload = mapSubjectForDb(subject)
+
     const { data, error } = await supabase
       .from('subjects')
-      .insert(subject)
+      .insert(payload)
       .select()
       .single()
 
     if (error) throw new Error(error.message)
-    return data
+    return mapSubjectFromDb(data as DbSubjectRow)
   },
 
   async updateSubject(
@@ -257,15 +296,17 @@ export const cmsApi = {
   ): Promise<Subject> {
     await ensureAuthenticated()
 
+    const payload = mapSubjectForDb(subject)
+
     const { data, error } = await supabase
       .from('subjects')
-      .update(subject)
+      .update(payload)
       .eq('id', subjectId)
       .select()
       .single()
 
     if (error) throw new Error(error.message)
-    return data
+    return mapSubjectFromDb(data as DbSubjectRow)
   },
 
   async deleteSubject(

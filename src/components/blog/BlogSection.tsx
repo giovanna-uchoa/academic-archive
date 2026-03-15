@@ -12,6 +12,8 @@ interface BlogSectionProps {
   subjectPosts: Post[];
 }
 
+const DEFAULT_BLOG_SECTION_TITLE = 'Articles & Experiments';
+
 function BlogSection({ subject, subjectPosts }: BlogSectionProps) {
     const theme = useTheme();
 
@@ -28,7 +30,7 @@ function BlogSection({ subject, subjectPosts }: BlogSectionProps) {
           }}
         >
           <BookOpen size={24} />
-          Articles and Experiments
+          {subject.blogSectionTitle || DEFAULT_BLOG_SECTION_TITLE}
         </Typography>
 
         {subjectPosts.length === 0 ? (
