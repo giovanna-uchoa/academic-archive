@@ -10,8 +10,8 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { renderSubjectIcon } from '../utils/iconRenderer';
-import { CategorySummary } from '../utils/dataTypes';
+import { renderSubjectIcon } from '../../utils/iconRenderer';
+import { CategorySummary } from '../../utils/dataTypes';
 
 interface CategoryCardProps {
   category: CategorySummary;
