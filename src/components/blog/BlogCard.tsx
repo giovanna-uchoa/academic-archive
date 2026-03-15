@@ -20,13 +20,14 @@ function BlogCard({ post, onSelectRedirectTo }: BlogCardProps) {
   return (
     <Card
       sx={{
+        height: '100%',
         width: '100%',
-        maxWidth: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         overflow: 'hidden',
         borderRadius: 3,
         border: `1px solid ${theme.palette.divider}`,
         boxShadow: 'none',
-        boxSizing: 'border-box',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
         '&:hover': {
           transform: 'translateY(-3px)',
@@ -42,61 +43,59 @@ function BlogCard({ post, onSelectRedirectTo }: BlogCardProps) {
         component={RouterLink}
         to={onSelectRedirectTo}
         sx={{
-          width: '100%',
-          display: 'block',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'stretch',
         }}
       >
         <CardContent
           sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
             p: { xs: 2, sm: 2.5 },
-            width: '100%',
-            minWidth: 0,
           }}
         >
-          <Stack spacing={1.5} sx={{ minWidth: 0 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                color: theme.palette.primary.main,
-                wordBreak: 'break-word',
-                transition: 'color 0.2s',
-                '&:hover': {
-                  color: theme.palette.secondary.main,
-                },
-              }}
-            >
-              {post.title}
-            </Typography>
-
-            <Typography
-              variant="body2"
-              sx={{
-                color: theme.palette.text.secondary,
-                overflowWrap: 'anywhere',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
-            >
-              {post.excerpt}
-            </Typography>
-
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{
-                alignItems: 'center',
-                pt: 1,
-                flexWrap: 'wrap',
-              }}
-            >
+          <Stack
+            sx={{
+              height: '100%',
+              justifyContent: 'space-between',
+            }}
+          >
+            {/* Top content */}
+            <Stack spacing={1.2}>
               <Typography
-                variant="caption"
+                variant="h6"
                 sx={{
-                  color: theme.palette.text.secondary,
+                  color: theme.palette.primary.main,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  transition: 'color 0.2s',
                 }}
               >
+                {post.title}
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {post.excerpt}
+              </Typography>
+            </Stack>
+
+            {/* Footer */}
+            <Stack direction="row" spacing={2} alignItems="center" pt={2}>
+              <Typography variant="caption" color="text.secondary">
                 {formatPostDate(post.date)}
               </Typography>
 
