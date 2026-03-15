@@ -18,11 +18,12 @@ function ArchiveMonthGroup({ group, subjectTitles }: ArchiveMonthGroupProps) {
       <Box
         sx={{
           position: 'absolute',
-          left: { xs: -24, md: -26 },
+          left: { xs: -16, md: -22 },
           top: 8,
           width: 10,
           height: 10,
           borderRadius: '50%',
+          transform: 'translateX(-50%)',
           border: (theme) => `2px solid ${theme.palette.secondary.main}`,
           backgroundColor: 'background.paper',
         }}

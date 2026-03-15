@@ -137,7 +137,7 @@ export const darkThemeOptions: ThemeOptions = {
       contrastText: '#0b121a',
     },
     secondary: {
-      main: '#d39a5f',
+      main: '#e8f1fb',
       light: '#e8c29a',
       dark: '#b67839',
       contrastText: '#0b121a',
