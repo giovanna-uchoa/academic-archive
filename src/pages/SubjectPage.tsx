@@ -79,52 +79,63 @@ function SubjectPage() {
   }
 
   return (
-    <Box
-      component="main"
-      sx={{
-        maxWidth: '56rem',
-        mx: 'auto',
-        px: { xs: 2, sm: 3 },
-        py: { xs: 4, sm: 6 },
-      }}
-    >
-      <Button
-        startIcon={<ArrowLeft size={18} />}
-        onClick={() => navigate(`/catalog`)}
+    <Box sx={{ width: '100%' }}>
+    {/* Back button */}
+      <Box
         sx={{
-          mb: 4,
-          textTransform: 'none',
-          color: theme.palette.text.secondary,
-          '&:hover': { color: theme.palette.primary.main },
+          maxWidth: '72rem',
+          mx: 'auto',
+          px: { xs: 2, sm: 3 },
+          pt: { xs: 3, sm: 4 },
         }}
       >
-        Back
-      </Button>
-
-      <Box sx={{ mb: 6 }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
-          <Box sx={{ color: theme.palette.secondary.main }}>
-            {renderSubjectIcon(subject.icon, { size: 34, fallbackSize: '2.1rem' })}
-          </Box>
-
-          <Box>
-            <Typography
-              variant="h2"
-              sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.25rem' }, mb: 1 }}
-            >
-              {subject.title}
-            </Typography>
-
-            <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
-              {subject.description}
-            </Typography>
-          </Box>
-        </Stack>
+        <Button
+          startIcon={<ArrowLeft size={18} />}
+          onClick={() => navigate(`/catalog`)}
+          sx={{
+            mb: 4,
+            textTransform: 'none',
+            color: theme.palette.text.secondary,
+            '&:hover': { color: theme.palette.primary.main },
+          }}
+        >
+          Back
+        </Button>
       </Box>
+      <Box
+        component="main"
+        sx={{
+          maxWidth: '60rem',
+          mx: 'auto',
+          px: { xs: 2, sm: 3 },
+          py: { xs: 4, sm: 6 },
+        }}
+      >
+        <Box sx={{ mb: 6 }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
+            <Box sx={{ color: theme.palette.secondary.main }}>
+              {renderSubjectIcon(subject.icon, { size: 34, fallbackSize: '2.1rem' })}
+            </Box>
 
-      {subject.overview && <MarkdownContent content={subject.overview} />}
+            <Box>
+              <Typography
+                variant="h2"
+                sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.25rem' }, mb: 1 }}
+              >
+                {subject.title}
+              </Typography>
 
-      <BlogSection subject={subject} subjectPosts={posts} />
+              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                {subject.description}
+              </Typography>
+            </Box>
+          </Stack>
+        </Box>
+
+        {subject.overview && <MarkdownContent content={subject.overview} />}
+
+        <BlogSection subject={subject} subjectPosts={posts} />
+      </Box>
     </Box>
   );
 }

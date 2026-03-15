@@ -33,7 +33,7 @@ export default function App() {
         }}
       >
         <Header />
-        <Container maxWidth="lg" sx={{ flex: 1, py: { xs: 3, md: 4 } }}>
+        <Container sx={{ flex: 1, py: { xs: 3, md: 4 }, maxWidth: '100vw' }}>
           <Box
             component="main"
             sx={{

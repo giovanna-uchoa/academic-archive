@@ -40,7 +40,12 @@ export default function CatalogPage() {
         </Typography>
       </Box>
 
-      <Grid container spacing={2.5}>
+      <Grid
+        container
+        rowSpacing={{ xs: 2, sm: 3 }}
+        columnSpacing={{ xs: 0, md: 3 }}
+        sx={{ width: '100%', margin: 0 }}
+      >
         {categories.map((category) => (
           <Grid item xs={12} md={6} key={category.id}>
             <Card
