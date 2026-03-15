@@ -5,7 +5,6 @@ import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
 
 import { useCmsContent } from '../utils/useCmsContent';
 import {
@@ -15,18 +14,13 @@ import {
 import { renderSubjectIcon } from '../utils/iconRenderer';
 
 import Hero from '../components/Hero';
+import Loading from '../components/ui/state/Loading';
 import BlogCard from '../components/blog/BlogCard';
 
 function HomePage() {
   const { posts, subjects, tagSummary, loading, error } = useCmsContent();
 
-  if (loading) {
-    return (
-      <Box sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (loading) return <Loading />;
 
   if (error) {
     return <Alert severity="error">{error}</Alert>;

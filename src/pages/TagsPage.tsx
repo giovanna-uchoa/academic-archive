@@ -1,30 +1,24 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Hash } from 'lucide-react';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
+
 import { useCmsContent } from '../utils/useCmsContent';
+import Loading from '../components/ui/state/Loading';
+import ErrorDisplay from '../components/ui/state/Error';
 
 export default function TagsPage() {
   const { tagSummary, loading, error } = useCmsContent();
   const tags = tagSummary;
 
-  if (loading) {
-    return (
-      <Box sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (loading) return <Loading />;
 
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
+  if (error) return <ErrorDisplay message={error} />;
+
 
   return (
     <Stack spacing={3}>

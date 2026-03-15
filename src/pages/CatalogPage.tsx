@@ -1,28 +1,20 @@
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
 
 import { useCmsContent } from '../utils/useCmsContent';
 import { buildCategorySummary } from '../utils/contentTaxonomy';
-import CategoryCard from '../components/category/CategoryCard';
+import Loading from '../components/ui/state/Loading';
+import ErrorDisplay from '../components/ui/state/Error';
+import CategoryCard from '../components/catalog/CategoryCard';
 
 export default function CatalogPage() {
   const { subjects, posts, loading, error } = useCmsContent();
   const categories = buildCategorySummary(subjects, posts);
 
-  if (loading) {
-    return (
-      <Box sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (loading) return <Loading />;
 
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
+  if (error) return <ErrorDisplay message={error} />;
 
   return (
     <Stack spacing={3}>

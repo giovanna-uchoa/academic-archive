@@ -7,10 +7,11 @@ import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Alert from '@mui/material/Alert';
-import CircularProgress from '@mui/material/CircularProgress';
+
 import { useCmsContent } from '../utils/useCmsContent';
 import { buildArchiveGroups, getPostPath } from '../utils/contentTaxonomy';
+import Loading from '../components/ui/state/Loading';
+import ErrorDisplay from '../components/ui/state/Error';
 
 export default function ArchivesPage() {
   const { posts, subjects, loading, error } = useCmsContent();
@@ -25,17 +26,9 @@ export default function ArchivesPage() {
     return acc;
   }, {});
 
-  if (loading) {
-    return (
-      <Box sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (loading) return <Loading />;
 
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
+  if (error) return <ErrorDisplay message={error} />;
 
   return (
     <Stack spacing={4}>
