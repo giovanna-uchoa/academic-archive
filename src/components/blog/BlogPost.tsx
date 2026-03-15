@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Calendar, Clock, Hash } from 'lucide-react';
+import { Calendar, Clock, Hash } from 'lucide-react';
 import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+
 import { cmsApi } from '../../utils/cmsApi';
 import type { Post } from '../../utils/dataTypes';
 import { formatPostDate, getPostTags, toTagSlug } from '../../utils/contentTaxonomy';
+
+import BackButton from '../BackButton';
 import MarkdownContent from '../MarkdownContent';
+import PageTopBar from '../ui/layout/PageTopBar';
+import PageContent from '../ui/layout/PageContent';
 
 interface BlogPostProps {
   post: Post;
@@ -57,40 +61,13 @@ function BlogPost({ post, subjectTitle, onBack, backLabel = 'Back to all posts' 
 
   return (
     <Box sx={{ width: '100%' }}>
-      {/* Back button */}
-      <Box
-        sx={{
-          maxWidth: '72rem',
-          mx: 'auto',
-          px: { xs: 2, sm: 3 },
-          pt: { xs: 3, sm: 4 },
-        }}
-      >
-        <Button
-          startIcon={<ArrowLeft size={18} />}
-          onClick={onBack}
-          sx={{
-            color: theme.palette.text.secondary,
-            textTransform: 'none',
-            '&:hover': {
-              color: theme.palette.primary.main,
-            },
-          }}
-        >
-          {backLabel}
-        </Button>
-      </Box>
+      <PageTopBar>
+       <BackButton onClick={onBack} />
+      </PageTopBar>
+
 
       {/* Main content */}
-      <Box
-        component="article"
-        sx={{
-          maxWidth: '60rem',
-          mx: 'auto',
-          px: { xs: 2, sm: 3 },
-          py: { xs: 3, sm: 5 },
-        }}
-      >
+      <PageContent>
         <Stack spacing={{ xs: 3, md: 4 }}>
           <Stack
             direction="row"
@@ -187,7 +164,7 @@ function BlogPost({ post, subjectTitle, onBack, backLabel = 'Back to all posts' 
 
           <MarkdownContent content={post.content} />
         </Stack>
-      </Box>
+      </PageContent>
     </Box>
   );
 }

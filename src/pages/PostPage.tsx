@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import BlogPost from '../components/blog/BlogPost';
+
 import { cmsApi } from '../utils/cmsApi';
 import type { Subject, Post } from '../utils/dataTypes';
+import Loading from '../components/ui/state/Loading';
+import NotFound from '../components/ui/state/NotFound';
+import ErrorDisplay from '../components/ui/state/Error';
+import BlogPost from '../components/blog/BlogPost';
 
 export default function PostPage() {
   const { postId, subjectId } = useParams<{ postId: string; subjectId?: string }>();
@@ -57,36 +58,11 @@ export default function PostPage() {
     };
   }, [postId, subjectId]);
 
-  if (loading) {
-    return (
-      <Box
-        component="main"
-        sx={{
-          py: 8,
-          display: 'flex',
-          justifyContent: 'center',
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (loading) return <Loading />;
 
-  if (error) {
-    return (
-      <Box component="main" sx={{ maxWidth: 700, mx: 'auto', p: 3 }}>
-        <Alert severity="error">{error}</Alert>
-      </Box>
-    );
-  }
+  if (error) return <ErrorDisplay message={error} />;
 
-  if (!post) {
-    return (
-      <Box component="main" sx={{ maxWidth: 700, mx: 'auto', p: 3 }}>
-        <Alert severity="warning">Post not found.</Alert>
-      </Box>
-    );
-  }
+  if (!post) return <NotFound title="Post not found" />;
 
   return (
     <BlogPost
