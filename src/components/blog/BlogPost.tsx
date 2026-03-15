@@ -12,7 +12,7 @@ import { cmsApi } from '../../utils/cmsApi';
 import type { Post } from '../../utils/dataTypes';
 import { formatPostDate, getPostTags, toTagSlug } from '../../utils/contentTaxonomy';
 
-import BackButton from '../BackButton';
+import BackButton from '../ui/BackButton';
 import MarkdownContent from '../MarkdownContent';
 import PageTopBar from '../ui/layout/PageTopBar';
 import PageContent from '../ui/layout/PageContent';

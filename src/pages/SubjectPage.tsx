@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 
 import { cmsApi } from '../utils/cmsApi';
 import type { Subject, Post } from '../utils/dataTypes';
-import BackButton from '../components/BackButton';
+import BackButton from '../components/ui/BackButton';
 import MarkdownContent from '../components/MarkdownContent';
 import BlogSection from '../components/blog/BlogSection';
 import Loading from '../components/ui/state/Loading';
