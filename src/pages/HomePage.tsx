@@ -1,11 +1,8 @@
 import { Link as RouterLink } from 'react-router-dom';
-
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
-import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -46,27 +43,36 @@ function HomePage() {
 
       <Divider />
 
-      <Grid
-        container
-        rowSpacing={{ xs: 2, sm: 3 }}
-        columnSpacing={{ xs: 0, md: 3 }}
-        sx={{ width: '100%', margin: 0 }}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            lg: '2fr 1fr',
+          },
+          gap: { xs: 2, sm: 3 },
+          width: '100%',
+        }}
       >
         {/* Posts */}
-        <Grid item xs={12} lg={8}>
+        <Box>
           <Stack spacing={2.5}>
             <Typography variant="h5">Recent Entries</Typography>
 
             <Stack spacing={2}>
               {recentPosts.map((post) => (
-                <BlogCard key={post.id} post={post} onSelectRedirectTo={`post/${post.id}`}/>
+                <BlogCard
+                  key={post.id}
+                  post={post}
+                  onSelectRedirectTo={`post/${post.id}`}
+                />
               ))}
             </Stack>
           </Stack>
-        </Grid>
+        </Box>
 
         {/* Sidebar */}
-        <Grid item xs={12} lg={4}>
+        <Box>
           <Stack spacing={4}>
             <Stack spacing={1.5}>
               <Typography variant="h6">Catalog</Typography>
@@ -75,7 +81,7 @@ function HomePage() {
                 <Stack
                   key={category.id}
                   direction="row"
-                  spacing={.5}
+                  spacing={0.5}
                   component={RouterLink}
                   to={`/subjects/${category.id}`}
                   sx={{
@@ -116,8 +122,8 @@ function HomePage() {
               </Stack>
             </Stack>
           </Stack>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Stack>
   );
 }

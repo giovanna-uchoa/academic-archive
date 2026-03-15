@@ -5,10 +5,11 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
+const appName = import.meta.env.VITE_APP_NAME;
+
 function Footer() {
   const theme = useTheme();
   const year = new Date().getFullYear();
-  const appName = import.meta.env.VITE_APP_NAME;
 
   return (
     <Box

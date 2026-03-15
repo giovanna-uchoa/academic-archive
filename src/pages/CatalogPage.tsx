@@ -6,7 +6,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useCmsContent } from '../utils/useCmsContent';
 import { buildCategorySummary } from '../utils/contentTaxonomy';
-import CategoryCard from '../components/CategoryCard';
+import CategoryCard from '../components/category/CategoryCard';
 
 export default function CatalogPage() {
   const { subjects, posts, loading, error } = useCmsContent();
