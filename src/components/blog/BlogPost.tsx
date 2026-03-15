@@ -56,126 +56,138 @@ function BlogPost({ post, subjectTitle, onBack, backLabel = 'Back to all posts' 
   }, [post.subjectId, subjectTitle]);
 
   return (
-    <Box
-      component="article"
-      sx={{
-        maxWidth: '56rem',
-        mx: 'auto',
-        px: { xs: 2, sm: 3 },
-        py: { xs: 4, sm: 6 },
-      }}
-    >
-      <Button
-        startIcon={<ArrowLeft size={18} />}
-        onClick={onBack}
+    <Box sx={{ width: '100%' }}>
+      {/* Back button */}
+      <Box
         sx={{
-          mb: { xs: 3, sm: 4 },
-          color: theme.palette.text.secondary,
-          textTransform: 'none',
-          '&:hover': {
-            color: theme.palette.primary.main,
-          },
+          maxWidth: '72rem',
+          mx: 'auto',
+          px: { xs: 2, sm: 3 },
+          pt: { xs: 3, sm: 4 },
         }}
       >
-        {backLabel}
-      </Button>
-
-      <Stack spacing={{ xs: 3, md: 4 }}>
-        <Stack
-          direction="row"
-          spacing={1}
+        <Button
+          startIcon={<ArrowLeft size={18} />}
+          onClick={onBack}
           sx={{
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            rowGap: 1,
+            color: theme.palette.text.secondary,
+            textTransform: 'none',
+            '&:hover': {
+              color: theme.palette.primary.main,
+            },
           }}
         >
-          {/* Main Category */}
-          <Chip
-            label={mainCategory}
-            size="small"
+          {backLabel}
+        </Button>
+      </Box>
+
+      {/* Main content */}
+      <Box
+        component="article"
+        sx={{
+          maxWidth: '60rem',
+          mx: 'auto',
+          px: { xs: 2, sm: 3 },
+          py: { xs: 3, sm: 5 },
+        }}
+      >
+        <Stack spacing={{ xs: 3, md: 4 }}>
+          <Stack
+            direction="row"
+            spacing={1}
             sx={{
-              fontWeight: 600,
-              backgroundColor: 'transparent',
-              border: `1px solid ${theme.palette.divider}`,
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              rowGap: 1,
             }}
-          />
+          >
+            {/* Main Category */}
+            <Chip
+              label={mainCategory}
+              size="small"
+              sx={{
+                fontWeight: 600,
+                backgroundColor: 'transparent',
+                border: `1px solid ${theme.palette.divider}`,
+              }}
+            />
 
-          {/* Tags */}
-          {tags.length > 0 &&
-            tags.map((tag) => (
-              <Chip
-                key={tag}
-                icon={<Hash size={14} />}
-                label={tag}
-                size="small"
-                clickable
-                component={RouterLink}
-                to={`/tags/${toTagSlug(tag)}`}
-                sx={{
-                  backgroundColor: 'transparent',
-                  color: theme.palette.text.secondary,
-                  border: `1px solid ${theme.palette.divider}`,
-                  '&:hover': {
-                    backgroundColor: theme.palette.action.hover,
-                  },
-                }}
-              />
-            ))}
-        </Stack>
-
-        {/* Title */}
-        <Typography
-          component="h1"
-          sx={{
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-            fontWeight: 700,
-            lineHeight: 1.05,
-            letterSpacing: '-0.035em',
-            maxWidth: '22ch',
-          }}
-        >
-          {post.title}
-        </Typography>
-
-        {/* Excerpt */}
-        <Typography
-          variant="body1"
-          sx={{
-            color: theme.palette.text.secondary,
-            fontSize: { xs: '1.05rem', md: '1.1rem' },
-            lineHeight: 1.75,
-            maxWidth: '48rem',
-          }}
-        >
-          {post.excerpt}
-        </Typography>
-
-        {/* Meta */}
-        <Stack
-          direction="row"
-          spacing={3}
-          sx={{
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            color: theme.palette.text.secondary,
-          }}
-        >
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Calendar size={16} />
-            <Typography variant="body2">{formattedDate}</Typography>
+            {/* Tags */}
+            {tags.length > 0 &&
+              tags.map((tag) => (
+                <Chip
+                  key={tag}
+                  icon={<Hash size={14} />}
+                  label={tag}
+                  size="small"
+                  clickable
+                  component={RouterLink}
+                  to={`/tags/${toTagSlug(tag)}`}
+                  sx={{
+                    backgroundColor: 'transparent',
+                    color: theme.palette.text.secondary,
+                    border: `1px solid ${theme.palette.divider}`,
+                    '&:hover': {
+                      backgroundColor: theme.palette.action.hover,
+                    },
+                  }}
+                />
+              ))}
           </Stack>
 
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Clock size={16} />
-            <Typography variant="body2">{timeSpent}</Typography>
+          {/* Title */}
+          <Typography
+            component="h1"
+            sx={{
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+              fontWeight: 700,
+              lineHeight: 1.05,
+              letterSpacing: '-0.035em',
+              maxWidth: '22ch',
+            }}
+          >
+            {post.title}
+          </Typography>
+
+          {/* Excerpt */}
+          <Typography
+            variant="body1"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontSize: { xs: '1.05rem', md: '1.1rem' },
+              lineHeight: 1.75,
+              maxWidth: '48rem',
+            }}
+          >
+            {post.excerpt}
+          </Typography>
+
+          {/* Meta */}
+          <Stack
+            direction="row"
+            spacing={3}
+            sx={{
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              color: theme.palette.text.secondary,
+            }}
+          >
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+              <Calendar size={16} />
+              <Typography variant="body2">{formattedDate}</Typography>
+            </Stack>
+
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+              <Clock size={16} />
+              <Typography variant="body2">{timeSpent}</Typography>
+            </Stack>
           </Stack>
+
+          <Divider sx={{ mt: 1 }} />
+
+          <MarkdownContent content={post.content} />
         </Stack>
-
-        <Divider sx={{ mt: 1 }} />
-
-        <MarkdownContent content={post.content} />
-      </Stack>
+      </Box>
     </Box>
   );
 }

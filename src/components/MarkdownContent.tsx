@@ -15,20 +15,30 @@ function MarkdownContent({ content }: MarkdownContentProps) {
   return (
     <Box
       sx={{
-        '& ul, & ol': {
-          pl: 2,
-          mb: 1.5,
-        },
-        '& li': {
-          mb: 0.5,
-        },
+        width: '100%',
+        minWidth: 0,
+        overflowX: 'hidden',
+        overflowWrap: 'anywhere',
+        wordBreak: 'break-word',
+
         '& pre': {
+          maxWidth: '100%',
+          overflowX: 'auto',
           backgroundColor: theme.palette.mode === 'light' ? '#f4ede4' : '#2a1f1a',
           border: `1px solid ${theme.palette.divider}`,
           borderRadius: '0.5rem',
           p: 2,
           overflow: 'auto',
           mb: 1.5,
+        },
+
+        '& ul, & ol': {
+          pl: 2,
+          mb: 1.5,
+        },
+        
+        '& li': {
+          mb: 0.5,
         },
       }}
     >
