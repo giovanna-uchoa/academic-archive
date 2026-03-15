@@ -78,6 +78,7 @@ migrations/
   20260313_tags_and_optional_subject_icon.sql
   20260314_posts_date_to_sql_date.sql
   20260314_normalize_tags_to_relational_tables.sql
+  20260314_subject_blog_controls.sql
 ```
 
 ## Getting started

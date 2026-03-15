@@ -32,7 +32,8 @@ function AdminHeader({
         width: '100%',
         maxWidth: isHero ? '80vw' : 'none',
         mx: 'auto',
-        transition: 'all 240ms ease'
+        transition: 'all 240ms ease',
+        boxShadow: isHero ? 0 : 1,
       }}
     >
       <Stack spacing={2} alignItems={isHero ? 'center' : 'stretch'}>

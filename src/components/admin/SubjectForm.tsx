@@ -6,6 +6,8 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import { cmsApi } from '../../utils/cmsApi';
 import { renderSubjectIcon } from '../../utils/iconRenderer';
 import type { Subject } from '../../utils/dataTypes';
@@ -23,6 +25,8 @@ const EMPTY_SUBJECT: Subject = {
   description: '',
   overview: '',
   icon: null,
+  blogEnabled: true,
+  blogSectionTitle: 'Articles & Experiments',
 };
 
 function SubjectForm({ subjects, reload, setStatus, setStatusType}: SubjectFormProps) {
@@ -135,6 +139,25 @@ function SubjectForm({ subjects, reload, setStatus, setStatusType}: SubjectFormP
               onChange={event =>
                 setSubjectForm(prev => ({ ...prev, overview: event.target.value }))
               }
+            />
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={subjectForm.blogEnabled}
+                  onChange={event =>
+                    setSubjectForm(prev => ({ ...prev, blogEnabled: event.target.checked }))
+                  }
+                />
+              )}
+              label="Show blog posts in this subject"
+            />
+            <TextField
+              label="Blog section title"
+              value={subjectForm.blogSectionTitle}
+              onChange={event =>
+                setSubjectForm(prev => ({ ...prev, blogSectionTitle: event.target.value }))
+              }
+              helperText="If empty, defaults to Articles & Experiments."
             />
 
             <Stack direction="row" spacing={1}>
