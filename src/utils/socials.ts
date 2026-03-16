@@ -23,7 +23,7 @@ export function getSocialLinks(): SocialLink[] {
   const socials: SocialLink[] = [];
 
   Object.entries(import.meta.env).forEach(([key, value]) => {
-    if (!key.startsWith('VITE_SOCIAL_') || !value) return;
+    if (!key.startsWith('VITE_SOCIAL_') || typeof value !== 'string' || !value) return;
 
     const name = key.replace('VITE_SOCIAL_', '').toLowerCase();
     const config = socialIconMap[name];
@@ -31,7 +31,7 @@ export function getSocialLinks(): SocialLink[] {
     if (!config) return;
 
     const href =
-      name === 'email'
+      name === 'mail'
         ? `mailto:${value}`
         : value;
 
