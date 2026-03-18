@@ -35,7 +35,7 @@ export function renderSubjectIcon(icon: string | null | undefined, options?: Ren
   const fallbackSize = options?.fallbackSize ?? '1.4rem';
 
   if (!icon || !icon.trim()) {
-    return <BookOpen size={size} />;
+    return;
   }
 
   const trimmed = icon.trim();

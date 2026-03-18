@@ -61,9 +61,11 @@ function CategoryCard({ category }: CategoryCardProps) {
             >
               <Stack spacing={1.2}>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Box sx={{ color: 'secondary.main' }}>
-                    {renderSubjectIcon(category.icon, { size: 24 })}
-                  </Box>
+                  {category.icon?.trim() && (
+                    <Box sx={{ color: 'secondary.main' }}>
+                      {renderSubjectIcon(category.icon, { size: 24 })}
+                    </Box>
+                  )}
 
                   <Typography variant="h6">
                     {category.title}
