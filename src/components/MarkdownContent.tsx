@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import { getContentPalette } from '../theme/muiTheme';
 
 interface MarkdownContentProps {
   content: string;
@@ -11,6 +12,7 @@ interface MarkdownContentProps {
 
 function MarkdownContent({ content }: MarkdownContentProps) {
   const theme = useTheme();
+  const contentPalette = getContentPalette(theme.palette.mode);
 
   return (
     <Box
@@ -24,12 +26,18 @@ function MarkdownContent({ content }: MarkdownContentProps) {
         '& pre': {
           maxWidth: '100%',
           overflowX: 'auto',
-          backgroundColor: theme.palette.mode === 'light' ? '#f4ede4' : '#2a1f1a',
-          border: `1px solid ${theme.palette.divider}`,
+          backgroundColor: contentPalette.markdownCodeBackground,
+          color: contentPalette.markdownCodeText,
           borderRadius: '0.5rem',
           p: 2,
           overflow: 'auto',
           mb: 1.5,
+        },
+
+        '& pre code': {
+          backgroundColor: 'transparent',
+          color: 'inherit',
+          p: 0,
         },
 
         '& ul, & ol': {
@@ -39,6 +47,14 @@ function MarkdownContent({ content }: MarkdownContentProps) {
         
         '& li': {
           mb: 0.5,
+        },
+
+        '& blockquote': {
+          margin: '0 0 1rem',
+          padding: '0.35rem 0.9rem',
+          borderLeft: `3px solid ${contentPalette.markdownBlockquoteBorder}`,
+          backgroundColor: contentPalette.markdownBlockquoteBackground,
+          borderRadius: '0.35rem',
         },
       }}
     >
@@ -64,11 +80,12 @@ function MarkdownContent({ content }: MarkdownContentProps) {
             <Box
                 component="code"
                 sx={{
-                backgroundColor: theme.palette.mode === 'light' ? '#f4ede4' : '#2a1f1a',
-                px: 0.5,
-                py: 0.25,
-                borderRadius: '4px',
-                fontFamily: 'monospace',
+                  px: 0.5,
+                  py: 0.25,
+                  borderRadius: '4px',
+                  fontFamily: 'monospace',
+                  backgroundColor: contentPalette.markdownCodeBackground,
+                  color: contentPalette.markdownCodeText,
                 }}
                 {...props}
             >

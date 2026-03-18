@@ -21,10 +21,9 @@ interface BlogPostProps {
   post: Post;
   subjectTitle?: string;
   onBack: () => void;
-  backLabel?: string;
 }
 
-function BlogPost({ post, subjectTitle, onBack, backLabel = 'Back to all posts' }: BlogPostProps) {
+function BlogPost({ post, subjectTitle, onBack }: BlogPostProps) {
   const theme = useTheme();
   const tags = getPostTags(post);
   const formattedDate = formatPostDate(post.date);
