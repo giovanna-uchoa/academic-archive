@@ -69,7 +69,6 @@ export default function PostPage() {
       post={post}
       subjectTitle={subject?.title}
       onBack={() => navigate(`/subjects/${subjectId ?? post.subjectId}`)}
-      backLabel={''}
     />
   );
 }

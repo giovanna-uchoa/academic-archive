@@ -3,6 +3,31 @@ import { ThemeOptions } from '@mui/material/styles';
 const headingFont = ['"Spectral"', '"Palatino Linotype"', '"Book Antiqua"', 'Palatino', 'serif'].join(',');
 const bodyFont = ['"Avenir Next"', '"Segoe UI"', '"Helvetica Neue"', 'sans-serif'].join(',');
 
+export interface ContentPalette {
+  markdownCodeBackground: string;
+  markdownCodeText: string;
+  markdownBlockquoteBorder: string;
+  markdownBlockquoteBackground: string;
+}
+
+export function getContentPalette(mode: 'light' | 'dark'): ContentPalette {
+  if (mode === 'dark') {
+    return {
+      markdownCodeBackground: '#1f2933',
+      markdownCodeText: '#f9fafb',
+      markdownBlockquoteBorder: '#9ca3af',
+      markdownBlockquoteBackground: '#182028',
+    };
+  }
+
+  return {
+    markdownCodeBackground: '#eee7dc',
+    markdownCodeText: '#1f1b16',
+    markdownBlockquoteBorder: '#a67c52',
+    markdownBlockquoteBackground: '#f8f4ed',
+  };
+}
+
 const sharedTypography: ThemeOptions['typography'] = {
   fontFamily: bodyFont,
   h1: {
@@ -57,6 +82,7 @@ function sharedComponents(mode: 'light' | 'dark'): ThemeOptions['components'] {
   const isLight = mode === 'light';
   const darkBorder = '#2b3847';
   const darkHover = '#d39a5f';
+  const content = getContentPalette(mode);
 
   return {
     MuiButton: {
