@@ -72,30 +72,23 @@ function HomePage() {
               <Typography variant="h6">Catalog</Typography>
 
               {categories.map((category) => (
-                <Stack
+                <Box
                   key={category.id}
-                  direction="row"
-                  spacing={0.5}
                   component={RouterLink}
                   to={`/subjects/${category.id}`}
                   sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
                     alignItems: 'center',
                     textDecoration: 'none',
                     color: 'text.secondary',
                     '&:hover': { color: 'secondary.main' },
                   }}
                 >
-                  <Box sx={{ display: 'flex', color: 'secondary.main' }}>
-                    {renderSubjectIcon(category.icon, {
-                      size: 18,
-                      fallbackSize: '1rem',
-                    })}
-                  </Box>
-
                   <Typography variant="body2">
-                    {category.title} ({category.totalPosts})
+                    {category.title}
                   </Typography>
-                </Stack>
+                </Box>
               ))}
             </Stack>
 

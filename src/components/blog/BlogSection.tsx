@@ -2,7 +2,6 @@ import { BookOpen } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import BlogCard from './BlogCard';
 import type { Subject, Post } from '../../utils/dataTypes';
@@ -44,11 +43,11 @@ function BlogSection({ subject, subjectPosts }: BlogSectionProps) {
             No entries yet. Check back soon.
           </Alert>
         ) : (
-          <Stack spacing={{ xs: 2, sm: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column-reverse', gap: { xs: 2, sm: 3 } }}>
             {subjectPosts.map((post) => (
               <BlogCard key={post.id} post={post} onSelectRedirectTo={`/subjects/${subject.id}/post/${post.id}`} />
             ))}
-          </Stack>
+          </Box>
         )}
       </Box>
     )

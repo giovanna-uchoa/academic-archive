@@ -16,9 +16,11 @@ function CategoryHeader({ category }: CategoryHeaderProps) {
   return (
     <Box sx={{ mb: 4 }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
-      <Box sx={{ color: theme.palette.secondary.main }}>
+      {category.icon?.trim() && (
+        <Box sx={{ color: theme.palette.secondary.main }}>
           {renderSubjectIcon(category.icon, { size: 34, fallbackSize: '2.1rem' })}
-      </Box>
+        </Box>
+      )}
 
       <Box>
           <Typography

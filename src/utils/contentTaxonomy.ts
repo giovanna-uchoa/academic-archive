@@ -79,7 +79,7 @@ export function buildCategorySummary(subjects: Subject[], posts: Post[]): Catego
       title: subject.title,
       description: subject.description,
       icon: subject.icon,
-      totalPosts: posts.filter((post) => post.subjectId === subject.id).length,
+      totalPosts: subject.blogEnabled ? posts.filter((post) => post.subjectId === subject.id).length : 0,
     }))
     .sort((a, b) => b.totalPosts - a.totalPosts || a.title.localeCompare(b.title));
 }
