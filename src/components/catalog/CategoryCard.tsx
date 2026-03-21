@@ -18,6 +18,17 @@ interface CategoryCardProps {
 }
 
 function CategoryCard({ category }: CategoryCardProps) {
+  
+  function formatText(text: string) {
+    if (!text) return "";
+    return text
+      .replace(/\n+/g, "; ")
+      .replace(/[*_]/g, "")
+      .replace(/[#>`~\-]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   return (
     <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
       <Card
@@ -82,7 +93,7 @@ function CategoryCard({ category }: CategoryCardProps) {
                     overflow: 'hidden',
                   }}
                 >
-                  {category.description}
+                  {formatText(category.description)}
                 </Typography>
               </Stack>
 
