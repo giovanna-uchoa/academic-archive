@@ -97,6 +97,13 @@ function MarkdownContent({ content }: MarkdownContentProps) {
                 href={props.href}
                 target={props.href?.startsWith('http') ? '_blank' : undefined}
                 rel="noopener noreferrer"
+                sx={{
+                  color: theme.palette.secondary.main,
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
+                }}
                 {...props}
             >
                 {props.children}

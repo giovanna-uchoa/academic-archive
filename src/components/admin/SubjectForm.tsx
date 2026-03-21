@@ -113,6 +113,7 @@ function SubjectForm({ subjects, reload, setStatus, setStatusType}: SubjectFormP
               required
             />
             <TextField
+              multiline
               label="Description"
               value={subjectForm.description}
               onChange={event =>
@@ -192,12 +193,14 @@ function SubjectForm({ subjects, reload, setStatus, setStatusType}: SubjectFormP
               >
                 <Box>
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', color: 'secondary.main' }}>
-                      {renderSubjectIcon(subject.icon, {
-                        size: 18,
-                        fallbackSize: '1rem',
-                      })}
-                    </Box>  
+                    {subject.icon &&
+                      <Box sx={{ display: 'flex', color: 'secondary.main' }}>
+                        {renderSubjectIcon(subject.icon, {
+                          size: 18,
+                          fallbackSize: '1rem',
+                        })}
+                      </Box>  
+                    }
                    <Typography fontWeight={600}> {subject.title} </Typography>
                   </Stack>
                   <Typography variant="body2" color="text.secondary">
