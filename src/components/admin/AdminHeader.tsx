@@ -5,7 +5,7 @@ import Button from '@mui/material/Button'
 import Alert from '@mui/material/Alert'
 
 interface AdminHeaderProps {
-  userEmail: string | null
+  userLabel: string | null
   onLoginClick: () => void
   onLogout: () => void
   status: string | null
@@ -15,7 +15,7 @@ interface AdminHeaderProps {
 }
 
 function AdminHeader({
-  userEmail,
+  userLabel,
   onLoginClick,
   onLogout,
   status,
@@ -39,13 +39,13 @@ function AdminHeader({
       <Stack spacing={2} alignItems={isHero ? 'center' : 'stretch'}>
         <Typography variant={isHero ? 'h3' : 'h4'}>Mini Admin Panel</Typography>
         <Typography variant={isHero ? 'body1' : 'body2'} color="text.secondary">
-          Manage subjects and posts stored in Supabase.
+          Manage subjects and posts stored in this GitHub repository.
         </Typography>
 
-        {userEmail ? (
+        {userLabel ? (
           <Stack direction="row" spacing={2} alignItems="center">
             <Typography variant="body2">
-              Logged as: <strong>{userEmail}</strong>
+              Logged as: <strong>{userLabel}</strong>
             </Typography>
             <Button
               variant="outlined"

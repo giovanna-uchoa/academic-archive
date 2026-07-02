@@ -94,18 +94,31 @@ function PostForm({ posts, subjects, tags, reload, setStatus, setStatusType}: Po
     }
   };
 
-  const handleEditPost = (post: Post) => {
-    setEditingPostId(post.id);
-    setPostForm({
-      title: post.title,
-      excerpt: post.excerpt,
-      content: post.content,
-      date: normalizePostDate(post.date) ?? post.date,
-      timeSpent: post.timeSpent,
-      subjectId: post.subjectId,
-      selectedTags: post.tags ?? [],
-    });
+  const handleEditPost = async (post: Post) => {
     clearStatus();
+
+    try {
+      const fullPost = await cmsApi.getPost(String(post.id));
+      if (!fullPost) {
+        setStatusType('error');
+        setStatus('Post not found.');
+        return;
+      }
+
+      setEditingPostId(fullPost.id);
+      setPostForm({
+        title: fullPost.title,
+        excerpt: fullPost.excerpt,
+        content: fullPost.content,
+        date: normalizePostDate(fullPost.date) ?? fullPost.date,
+        timeSpent: fullPost.timeSpent,
+        subjectId: fullPost.subjectId,
+        selectedTags: fullPost.tags ?? [],
+      });
+    } catch (err) {
+      setStatusType('error');
+      setStatus(err instanceof Error ? err.message : 'Failed to load post');
+    }
   };
 
   const handleDeletePost = async (postId: number) => {

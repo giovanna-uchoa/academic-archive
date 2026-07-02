@@ -18,7 +18,7 @@ interface TagFormProps {
 
 function TagForm({ tags, reload, setStatus, setStatusType }: TagFormProps) {
   const [name, setName] = useState('');
-  const [editingTagId, setEditingTagId] = useState<number | null>(null);
+  const [editingTagName, setEditingTagName] = useState<string | null>(null);
 
   const clearStatus = () => {
     setStatus(null);
@@ -26,12 +26,14 @@ function TagForm({ tags, reload, setStatus, setStatusType }: TagFormProps) {
 
   const resetForm = () => {
     setName('');
-    setEditingTagId(null);
+    setEditingTagName(null);
   };
 
   const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     clearStatus();
+
+    if (!editingTagName) return;
 
     const trimmedName = name.trim();
     if (!trimmedName) {
@@ -41,39 +43,33 @@ function TagForm({ tags, reload, setStatus, setStatusType }: TagFormProps) {
     }
 
     try {
-      if (editingTagId) {
-        await cmsApi.updateTag(editingTagId, trimmedName);
-        setStatusType('success');
-        setStatus(`Tag "${trimmedName}" updated.`);
-      } else {
-        await cmsApi.createTag(trimmedName);
-        setStatusType('success');
-        setStatus(`Tag "${trimmedName}" created.`);
-      }
+      const { updatedPostIds } = await cmsApi.renameTag(editingTagName, trimmedName);
+      setStatusType('success');
+      setStatus(`Tag "${editingTagName}" renamed to "${trimmedName}" on ${updatedPostIds.length} post(s).`);
 
       resetForm();
       await reload();
     } catch (err) {
       setStatusType('error');
-      setStatus(err instanceof Error ? err.message : 'Tag save failed');
+      setStatus(err instanceof Error ? err.message : 'Tag rename failed');
     }
   };
 
   const handleEditTag = (tag: Tag) => {
-    setEditingTagId(tag.id);
+    setEditingTagName(tag.name);
     setName(tag.name);
     clearStatus();
   };
 
-  const handleDeleteTag = async (tagId: number) => {
+  const handleDeleteTag = async (tag: Tag) => {
     clearStatus();
 
     try {
-      await cmsApi.deleteTag(tagId);
+      const { updatedPostIds } = await cmsApi.removeTag(tag.name);
       setStatusType('success');
-      setStatus('Tag deleted.');
+      setStatus(`Tag "${tag.name}" removed from ${updatedPostIds.length} post(s).`);
 
-      if (editingTagId === tagId) {
+      if (editingTagName === tag.name) {
         resetForm();
       }
 
@@ -88,35 +84,38 @@ function TagForm({ tags, reload, setStatus, setStatusType }: TagFormProps) {
     <Paper sx={{ p: 3 }}>
       <Stack spacing={2}>
         <Typography variant="h5">Tags</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Tags are derived from the posts that use them — there's no standalone tag list to
+          create from. Renaming or removing a tag here rewrites every post that carries it.
+        </Typography>
 
-        <Box component="form" onSubmit={handleSubmit}>
-          <Stack spacing={2}>
-            <TextField
-              label="Tag Name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              required
-              helperText="Examples: ai, machine-learning, data-viz"
-            />
+        {editingTagName && (
+          <Box component="form" onSubmit={handleSubmit}>
+            <Stack spacing={2}>
+              <TextField
+                label={`Rename "${editingTagName}" to`}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                required
+              />
 
-            <Stack direction="row" spacing={1}>
-              <Button type="submit" variant="contained">
-                {editingTagId ? 'Update Tag' : 'Create Tag'}
-              </Button>
-              {editingTagId && (
+              <Stack direction="row" spacing={1}>
+                <Button type="submit" variant="contained">
+                  Rename Tag
+                </Button>
                 <Button variant="outlined" onClick={resetForm}>
                   Cancel
                 </Button>
-              )}
+              </Stack>
             </Stack>
-          </Stack>
-        </Box>
+          </Box>
+        )}
 
         <Divider />
 
         <Stack spacing={1.5}>
           {tags.map((tag) => (
-            <Paper key={tag.id} variant="outlined" sx={{ p: 2 }}>
+            <Paper key={tag.slug} variant="outlined" sx={{ p: 2 }}>
               <Stack
                 direction={{ xs: 'column', sm: 'row' }}
                 justifyContent="space-between"
@@ -132,19 +131,24 @@ function TagForm({ tags, reload, setStatus, setStatusType }: TagFormProps) {
 
                 <Stack direction="row" spacing={1}>
                   <Button size="small" onClick={() => handleEditTag(tag)}>
-                    Edit
+                    Rename
                   </Button>
                   <Button
                     size="small"
                     color="error"
-                    onClick={() => handleDeleteTag(tag.id)}
+                    onClick={() => handleDeleteTag(tag)}
                   >
-                    Delete
+                    Remove
                   </Button>
                 </Stack>
               </Stack>
             </Paper>
           ))}
+          {tags.length === 0 && (
+            <Typography variant="body2" color="text.secondary">
+              No tags yet — add tags to a post to see them here.
+            </Typography>
+          )}
         </Stack>
       </Stack>
     </Paper>

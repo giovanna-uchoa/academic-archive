@@ -10,12 +10,12 @@ import SubjectForm from '../../components/admin/SubjectForm'
 import PostForm from '../../components/admin/PostForm'
 import TagForm from '../../components/admin/TagForm'
 import { useCmsContent } from '../../utils/useCmsContent'
-import { supabase } from '../../utils/supabaseClient'
+import { getStoredToken, clearStoredToken, validateToken } from '../../utils/githubAuth'
 
 function AdminPage() {
   const { subjects, posts, tags, loading, error, reload } = useCmsContent()
 
-  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [userLabel, setUserLabel] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
   const [statusType, setStatusType] =
@@ -24,19 +24,15 @@ function AdminPage() {
     useState<'subjects' | 'posts' | 'tags'>('subjects')
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserEmail(session?.user?.email ?? null)
-    })
+    const token = getStoredToken()
+    if (!token) return
 
-    supabase.auth.getSession().then(({ data }) => {
-      setUserEmail(data.session?.user?.email ?? null)
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
+    validateToken(token)
+      .then((user) => setUserLabel(user.login))
+      .catch(() => {
+        clearStoredToken()
+        setUserLabel(null)
+      })
   }, [])
 
   const sortedPosts = useMemo(
@@ -44,20 +40,14 @@ function AdminPage() {
     [posts]
   )
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut()
-
-    if (error) {
-      setStatusType('error')
-      setStatus(error.message)
-      return
-    }
-
+  const handleLogout = () => {
+    clearStoredToken()
+    setUserLabel(null)
     setStatusType('success')
     setStatus('Logged out successfully.')
   }
 
-  const isAuthenticated = Boolean(userEmail)
+  const isAuthenticated = Boolean(userLabel)
 
   return (
     <Box
@@ -77,7 +67,7 @@ function AdminPage() {
         }}
       >
         <AdminHeader
-          userEmail={userEmail}
+          userLabel={userLabel}
           onLoginClick={() => setLoginOpen(true)}
           onLogout={handleLogout}
           status={status}
@@ -89,7 +79,8 @@ function AdminPage() {
         <LoginDialog
           open={loginOpen}
           onClose={() => setLoginOpen(false)}
-          onSuccess={() => {
+          onSuccess={(login) => {
+            setUserLabel(login)
             setStatusType('success')
             setStatus('Logged in successfully.')
           }}
