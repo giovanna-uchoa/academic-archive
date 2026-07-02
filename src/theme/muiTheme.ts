@@ -8,6 +8,7 @@ export interface ContentPalette {
   markdownCodeText: string;
   markdownBlockquoteBorder: string;
   markdownBlockquoteBackground: string;
+  elevatedShadow: string;
 }
 
 export function getContentPalette(mode: 'light' | 'dark'): ContentPalette {
@@ -17,6 +18,7 @@ export function getContentPalette(mode: 'light' | 'dark'): ContentPalette {
       markdownCodeText: '#f9fafb',
       markdownBlockquoteBorder: '#9ca3af',
       markdownBlockquoteBackground: '#182028',
+      elevatedShadow: '0 18px 32px rgba(0,0,0,0.24)',
     };
   }
 
@@ -25,6 +27,7 @@ export function getContentPalette(mode: 'light' | 'dark'): ContentPalette {
     markdownCodeText: '#1f1b16',
     markdownBlockquoteBorder: '#a67c52',
     markdownBlockquoteBackground: '#f8f4ed',
+    elevatedShadow: '0 18px 32px rgba(64,45,24,0.08)',
   };
 }
 
@@ -102,7 +105,7 @@ function sharedComponents(mode: 'light' | 'dark'): ThemeOptions['components'] {
           transition: 'border-color 0.2s ease, transform 0.2s ease',
           '&:hover': {
             borderColor: isLight ? '#b08a5a' : darkHover,
-            transform: 'translateY(-1px)',
+            transform: 'translateY(-2px)',
           },
         },
       },

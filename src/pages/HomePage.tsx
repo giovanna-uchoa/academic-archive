@@ -1,8 +1,6 @@
 import { Link as RouterLink } from 'react-router-dom';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -15,6 +13,7 @@ import { renderSubjectIcon } from '../utils/iconRenderer';
 
 import Hero from '../components/Hero';
 import Loading from '../components/ui/state/Loading';
+import ErrorDisplay from '../components/ui/state/Error';
 import BlogCard from '../components/blog/BlogCard';
 
 function HomePage() {
@@ -23,7 +22,7 @@ function HomePage() {
   if (loading) return <Loading />;
 
   if (error) {
-    return <Alert severity="error">{error}</Alert>;
+    return <ErrorDisplay message={error} />;
   }
 
   const orderedPosts = sortPostsByDateDesc(posts);
@@ -34,8 +33,6 @@ function HomePage() {
   return (
     <Stack spacing={4}>
       <Hero />
-
-      <Divider />
 
       <Box
         sx={{

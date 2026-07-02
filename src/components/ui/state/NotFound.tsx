@@ -24,7 +24,7 @@ function NotFound({
       sx={{
         maxWidth: '56rem',
         mx: 'auto',
-        px: 3,
+        px: { xs: 2, sm: 3 },
         py: 8,
         textAlign: 'center',
       }}

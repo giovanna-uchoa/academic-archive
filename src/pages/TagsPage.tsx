@@ -1,8 +1,6 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Hash } from 'lucide-react';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -30,22 +28,18 @@ export default function TagsPage() {
         </Typography>
       </Box>
 
-      <Card variant="outlined">
-        <CardContent>
-          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-            {tags.map((tag) => (
-              <Chip
-                key={tag.slug}
-                icon={<Hash size={14} />}
-                label={`${tag.label} (${tag.totalPosts})`}
-                component={RouterLink}
-                to={`/tags/${tag.slug}`}
-                clickable
-              />
-            ))}
-          </Stack>
-        </CardContent>
-      </Card>
+      <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+        {tags.map((tag) => (
+          <Chip
+            key={tag.slug}
+            icon={<Hash size={14} />}
+            label={`${tag.label} (${tag.totalPosts})`}
+            component={RouterLink}
+            to={`/tags/${tag.slug}`}
+            clickable
+          />
+        ))}
+      </Stack>
     </Stack>
   );
 }

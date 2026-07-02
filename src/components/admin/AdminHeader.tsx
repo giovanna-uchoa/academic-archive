@@ -30,7 +30,7 @@ function AdminHeader({
       sx={{
         p: isHero ? { xs: 4, md: 6 } : 3,
         width: '100%',
-        maxWidth: isHero ? '80vw' : 'none',
+        maxWidth: isHero ? '75rem' : 'none',
         mx: 'auto',
         transition: 'all 240ms ease',
         boxShadow: isHero ? 0 : 1,
