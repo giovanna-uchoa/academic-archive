@@ -9,17 +9,16 @@ import {
   Alert,
   Stack
 } from '@mui/material'
-import { supabase } from '../../utils/supabaseClient'
+import { setStoredToken, validateToken } from '../../utils/githubAuth'
 
 interface Props {
   open: boolean
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (login: string) => void
 }
 
 function LoginDialog({ open, onClose, onSuccess }: Props) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [token, setToken] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -27,22 +26,17 @@ function LoginDialog({ open, onClose, onSuccess }: Props) {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-
-    setLoading(false)
-    setPassword('')
-
-    if (error) {
-      setError(error.message)
-      return
+    try {
+      const user = await validateToken(token.trim())
+      setStoredToken(token.trim())
+      setToken('')
+      onSuccess(user.login)
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed')
+    } finally {
+      setLoading(false)
     }
-
-    setEmail('')
-    onSuccess()
-    onClose()
   }
 
   return (
@@ -51,17 +45,12 @@ function LoginDialog({ open, onClose, onSuccess }: Props) {
       <DialogContent>
         <Stack spacing={2} mt={1}>
           <TextField
-            label="Email"
-            fullWidth
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-          />
-          <TextField
-            label="Password"
+            label="GitHub Personal Access Token"
             type="password"
             fullWidth
-            value={password}
-            onChange={e => setPassword(e.target.value)}
+            value={token}
+            onChange={e => setToken(e.target.value)}
+            helperText="Use a fine-grained PAT scoped to only this repo, with Contents read/write permission and an expiry set. Stored in this tab's session only."
           />
           {error && <Alert severity="error">{error}</Alert>}
         </Stack>
@@ -71,7 +60,7 @@ function LoginDialog({ open, onClose, onSuccess }: Props) {
         <Button
           variant="contained"
           onClick={handleLogin}
-          disabled={loading}
+          disabled={loading || !token.trim()}
         >
           Login
         </Button>

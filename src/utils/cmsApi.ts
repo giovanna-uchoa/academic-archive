@@ -1,88 +1,34 @@
 import type { Post, Subject, Tag, TagSummary } from './dataTypes'
-import { supabase } from './supabaseClient'
-import { normalizePostDate, toPostStorageDate } from './contentTaxonomy'
+import { getRawFile, getFileWithSha, putFile, deleteFile } from './githubClient'
+import { parseFrontmatter, stringifyFrontmatter } from './frontmatter'
+import { normalizePostDate, getPostDate, toTagSlug } from './contentTaxonomy'
 
-interface DbTag {
-  id: number
-  name: string
-  slug: string
+const MANIFEST_PATH = 'content/manifest.json'
+const DEFAULT_BLOG_SECTION_TITLE = 'Articles & Experiments'
+
+type PostSummary = Omit<Post, 'content'>
+
+interface Manifest {
+  subjects: Subject[]
+  posts: PostSummary[]
 }
 
-interface DbPostRow {
+interface PostFrontmatter {
   id: number
   title: string
   excerpt: string
-  content: string
   date: string
   timeSpent: string
   subjectId: string
-  post_tags?: Array<{
-    tags: DbTag | null
-  }> | null
+  tags: string[]
 }
 
-interface DbTagSummaryRow {
-  name: string
-  slug: string
-  post_tags?: Array<{ tag_id: number }> | null
-}
-
-interface DbSubjectRow {
-  id: string
+interface SubjectFrontmatter {
   title: string
   description: string
-  overview: string
-  icon?: string | null
-  blogEnabled?: boolean | null
-  blogSectionTitle?: string | null
-}
-
-const DEFAULT_BLOG_SECTION_TITLE = 'Articles & Experiments'
-
-async function ensureAuthenticated() {
-  const { data } = await supabase.auth.getUser()
-  if (!data.user) {
-    throw new Error('Not authenticated')
-  }
-  return data.user
-}
-
-function mapPostFromDb(post: DbPostRow): Post {
-  const relationalTags =
-    post.post_tags
-      ?.map((entry) => entry.tags?.name?.trim() ?? '')
-      .filter(Boolean) ?? []
-
-  return {
-    id: post.id,
-    title: post.title,
-    excerpt: post.excerpt,
-    content: post.content,
-    date: normalizePostDate(post.date) ?? post.date,
-    timeSpent: post.timeSpent,
-    subjectId: post.subjectId,
-    tags: [...new Set(relationalTags)],
-  }
-}
-
-function mapPostForDb(post: Omit<Post, 'id'>): Omit<Post, 'id' | 'tags'> {
-  const storageDate = toPostStorageDate(post.date)
-  if (!storageDate) {
-    throw new Error('Invalid post date. Use yyyy/mm/dd.')
-  }
-
-  return {
-    title: post.title,
-    excerpt: post.excerpt,
-    content: post.content,
-    date: storageDate,
-    timeSpent: post.timeSpent,
-    subjectId: post.subjectId,
-  }
-}
-
-function normalizeTagName(value: string): string {
-  return value.trim().replace(/\s+/g, ' ')
+  icon: string | null
+  blogEnabled: boolean
+  blogSectionTitle: string
 }
 
 function normalizeBlogSectionTitle(value: string | null | undefined): string {
@@ -90,97 +36,95 @@ function normalizeBlogSectionTitle(value: string | null | undefined): string {
   return cleaned || DEFAULT_BLOG_SECTION_TITLE
 }
 
-function mapSubjectFromDb(subject: DbSubjectRow): Subject {
+function normalizeTags(tags: string[] | undefined): string[] {
+  return [...new Set((tags ?? []).map((tag) => tag.trim()).filter(Boolean))]
+}
+
+function postSummary(post: Post): PostSummary {
   return {
-    id: subject.id,
+    id: post.id,
+    title: post.title,
+    excerpt: post.excerpt,
+    date: post.date,
+    timeSpent: post.timeSpent,
+    subjectId: post.subjectId,
+    tags: post.tags,
+  }
+}
+
+function toPostWithEmptyContent(summary: PostSummary): Post {
+  return { ...summary, content: '' }
+}
+
+function toPostFrontmatter(post: Post): PostFrontmatter {
+  return {
+    id: post.id,
+    title: post.title,
+    excerpt: post.excerpt,
+    date: post.date,
+    timeSpent: post.timeSpent,
+    subjectId: post.subjectId,
+    tags: post.tags,
+  }
+}
+
+function toSubjectFrontmatter(subject: Subject): SubjectFrontmatter {
+  return {
     title: subject.title,
     description: subject.description,
-    overview: subject.overview,
     icon: subject.icon ?? null,
-    blogEnabled: subject.blogEnabled ?? true,
-    blogSectionTitle: normalizeBlogSectionTitle(subject.blogSectionTitle),
+    blogEnabled: subject.blogEnabled,
+    blogSectionTitle: subject.blogSectionTitle,
   }
 }
 
-function mapSubjectForDb(subject: Subject | Omit<Subject, 'id'>) {
+function postFilePath(id: number): string {
+  return `content/posts/${id}.md`
+}
+
+function subjectFilePath(id: string): string {
+  return `content/subjects/${id}.md`
+}
+
+async function readManifest(): Promise<Manifest> {
+  const raw = await getRawFile(MANIFEST_PATH)
+  if (!raw) return { subjects: [], posts: [] }
+  return JSON.parse(raw) as Manifest
+}
+
+async function readManifestForWrite(): Promise<{ manifest: Manifest; sha: string | undefined }> {
+  const file = await getFileWithSha(MANIFEST_PATH)
+  if (!file) return { manifest: { subjects: [], posts: [] }, sha: undefined }
+  return { manifest: JSON.parse(file.content) as Manifest, sha: file.sha }
+}
+
+async function writeManifest(
+  manifest: Manifest,
+  sha: string | undefined,
+  message: string
+): Promise<void> {
+  await putFile(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`, message, sha)
+}
+
+async function readPostFile(id: number): Promise<Post | null> {
+  const raw = await getRawFile(postFilePath(id))
+  if (!raw) return null
+
+  const { data, content } = parseFrontmatter<PostFrontmatter>(raw)
   return {
-    ...subject,
-    blogEnabled: subject.blogEnabled ?? true,
-    blogSectionTitle: normalizeBlogSectionTitle(subject.blogSectionTitle),
+    id: data.id,
+    title: data.title,
+    excerpt: data.excerpt,
+    content,
+    date: normalizePostDate(data.date) ?? data.date,
+    timeSpent: data.timeSpent,
+    subjectId: data.subjectId,
+    tags: normalizeTags(data.tags),
   }
 }
 
-function toTagSlug(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-}
-
-async function resolveTagIds(tagNames: string[]): Promise<number[]> {
-  const normalizedNames = [...new Set(tagNames.map(normalizeTagName).filter(Boolean))]
-  if (normalizedNames.length === 0) return []
-
-  const tagsToResolve = normalizedNames
-    .map((name) => ({ name, slug: toTagSlug(name) }))
-    .filter((tag) => Boolean(tag.slug))
-
-  if (tagsToResolve.length === 0) return []
-
-  const slugs = tagsToResolve.map((tag) => tag.slug)
-  const { data: existingTags, error: existingError } = await supabase
-    .from('tags')
-    .select('id, name, slug')
-    .in('slug', slugs)
-
-  if (existingError) throw new Error(existingError.message)
-
-  const existingBySlug = new Map((existingTags ?? []).map((tag) => [tag.slug, tag]))
-  const missing = tagsToResolve.filter((tag) => !existingBySlug.has(tag.slug))
-
-  if (missing.length > 0) {
-    const { data: createdTags, error: createError } = await supabase
-      .from('tags')
-      .insert(missing)
-      .select('id, name, slug')
-
-    if (createError) throw new Error(createError.message)
-
-    for (const tag of createdTags ?? []) {
-      existingBySlug.set(tag.slug, tag)
-    }
-  }
-
-  return tagsToResolve
-    .map((tag) => existingBySlug.get(tag.slug)?.id)
-    .filter((id): id is number => typeof id === 'number')
-}
-
-async function syncPostTags(postId: number, tagNames: string[]) {
-  const tagIds = await resolveTagIds(tagNames)
-
-  const { error: deleteError } = await supabase
-    .from('post_tags')
-    .delete()
-    .eq('post_id', postId)
-
-  if (deleteError) throw new Error(deleteError.message)
-
-  if (tagIds.length === 0) return
-
-  const payload = tagIds.map((tagId) => ({
-    post_id: postId,
-    tag_id: tagId,
-  }))
-
-  const { error: insertError } = await supabase
-    .from('post_tags')
-    .insert(payload)
-
-  if (insertError) throw new Error(insertError.message)
+function computeNextPostId(manifest: Manifest): number {
+  return manifest.posts.reduce((max, post) => Math.max(max, post.id), 0) + 1
 }
 
 export const cmsApi = {
@@ -189,85 +133,59 @@ export const cmsApi = {
   // =========================
 
   async listSubjects(): Promise<Subject[]> {
-    const { data, error } = await supabase
-      .from('subjects')
-      .select('*')
-      .order('created_at', { ascending: true })
-
-    if (error) throw new Error(error.message)
-    return (data ?? []).map((subject) => mapSubjectFromDb(subject as DbSubjectRow))
+    const manifest = await readManifest()
+    return manifest.subjects
   },
 
   async getSubject(subjectId: string): Promise<Subject | null> {
-    const { data, error } = await supabase
-      .from('subjects')
-      .select('*')
-      .eq('id', subjectId)
-      .single()
-
-    if (error) throw new Error(error.message)
-    return data ? mapSubjectFromDb(data as DbSubjectRow) : null
+    const manifest = await readManifest()
+    return manifest.subjects.find((subject) => subject.id === subjectId) ?? null
   },
 
   async listPosts(): Promise<Post[]> {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('id, title, excerpt, content, date, timeSpent, subjectId, post_tags(tags(id, name, slug))')
-      .order('date', { ascending: true })
-
-    if (error) throw new Error(error.message)
-    return (data ?? []).map((post) => mapPostFromDb(post as unknown as DbPostRow))
+    const manifest = await readManifest()
+    return manifest.posts
+      .map(toPostWithEmptyContent)
+      .sort((a, b) => getPostDate(a).getTime() - getPostDate(b).getTime())
   },
 
   async listPostsBySubjectId(subjectId: string): Promise<Post[]> {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('id, title, excerpt, content, date, timeSpent, subjectId, post_tags(tags(id, name, slug))')
-      .eq('subjectId', subjectId)
-      .order('id', { ascending: true })
-
-    if (error) throw new Error(error.message)
-    return (data ?? []).map((post) => mapPostFromDb(post as unknown as DbPostRow))
+    const manifest = await readManifest()
+    return manifest.posts
+      .filter((post) => post.subjectId === subjectId)
+      .map(toPostWithEmptyContent)
+      .sort((a, b) => a.id - b.id)
   },
 
   async getPost(postId: string): Promise<Post | null> {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('id, title, excerpt, content, date, timeSpent, subjectId, post_tags(tags(id, name, slug))')
-      .eq('id', postId)
-      .single()
-
-    if (error) throw new Error(error.message)
-    return data ? mapPostFromDb(data as unknown as DbPostRow) : null
+    const id = Number(postId)
+    if (!Number.isInteger(id)) return null
+    return readPostFile(id)
   },
 
   async listTags(): Promise<Tag[]> {
-    const { data, error } = await supabase
-      .from('tags')
-      .select('id, name, slug')
-      .order('name', { ascending: true })
+    const manifest = await readManifest()
+    const names = new Set<string>()
+    for (const post of manifest.posts) {
+      for (const tag of post.tags ?? []) names.add(tag)
+    }
 
-    if (error) throw new Error(error.message)
-    return data ?? []
+    return [...names]
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ name, slug: toTagSlug(name) }))
   },
 
   async listTagSummary(): Promise<TagSummary[]> {
-    const { data, error } = await supabase
-      .from('tags')
-      .select('name, slug, post_tags(tag_id)')
-      .order('name', { ascending: true })
+    const manifest = await readManifest()
+    const counts = new Map<string, number>()
+    for (const post of manifest.posts) {
+      for (const tag of post.tags ?? []) {
+        counts.set(tag, (counts.get(tag) ?? 0) + 1)
+      }
+    }
 
-    if (error) throw new Error(error.message)
-
-    return (data ?? [])
-      .map((tag) => {
-        const row = tag as unknown as DbTagSummaryRow
-        return {
-          slug: row.slug,
-          label: row.name,
-          totalPosts: row.post_tags?.length ?? 0,
-        }
-      })
+    return [...counts.entries()]
+      .map(([name, totalPosts]) => ({ slug: toTagSlug(name), label: name, totalPosts }))
       .sort((a, b) => b.totalPosts - a.totalPosts || a.label.localeCompare(b.label))
   },
 
@@ -276,50 +194,84 @@ export const cmsApi = {
   // =========================
 
   async createSubject(subject: Subject): Promise<Subject> {
-    await ensureAuthenticated()
+    const { manifest, sha } = await readManifestForWrite()
 
-    const payload = mapSubjectForDb(subject)
+    if (manifest.subjects.some((existing) => existing.id === subject.id)) {
+      throw new Error(`Subject "${subject.id}" already exists.`)
+    }
 
-    const { data, error } = await supabase
-      .from('subjects')
-      .insert(payload)
-      .select()
-      .single()
+    const normalized: Subject = {
+      ...subject,
+      icon: subject.icon?.trim() || null,
+      blogSectionTitle: normalizeBlogSectionTitle(subject.blogSectionTitle),
+    }
 
-    if (error) throw new Error(error.message)
-    return mapSubjectFromDb(data as DbSubjectRow)
+    await putFile(
+      subjectFilePath(normalized.id),
+      stringifyFrontmatter(toSubjectFrontmatter(normalized), normalized.overview),
+      `Create subject: ${normalized.title}`
+    )
+
+    manifest.subjects.push(normalized)
+    await writeManifest(manifest, sha, `Update manifest: add subject ${normalized.id}`)
+
+    return normalized
   },
 
-  async updateSubject(
-    subjectId: string,
-    subject: Omit<Subject, 'id'>
-  ): Promise<Subject> {
-    await ensureAuthenticated()
+  async updateSubject(subjectId: string, subject: Omit<Subject, 'id'>): Promise<Subject> {
+    const normalized: Subject = {
+      ...subject,
+      id: subjectId,
+      icon: subject.icon?.trim() || null,
+      blogSectionTitle: normalizeBlogSectionTitle(subject.blogSectionTitle),
+    }
 
-    const payload = mapSubjectForDb(subject)
+    const existingFile = await getFileWithSha(subjectFilePath(subjectId))
+    await putFile(
+      subjectFilePath(subjectId),
+      stringifyFrontmatter(toSubjectFrontmatter(normalized), normalized.overview),
+      `Update subject: ${normalized.title}`,
+      existingFile?.sha
+    )
 
-    const { data, error } = await supabase
-      .from('subjects')
-      .update(payload)
-      .eq('id', subjectId)
-      .select()
-      .single()
+    const { manifest, sha } = await readManifestForWrite()
+    const index = manifest.subjects.findIndex((existing) => existing.id === subjectId)
+    if (index === -1) manifest.subjects.push(normalized)
+    else manifest.subjects[index] = normalized
 
-    if (error) throw new Error(error.message)
-    return mapSubjectFromDb(data as DbSubjectRow)
+    await writeManifest(manifest, sha, `Update manifest: update subject ${subjectId}`)
+
+    return normalized
   },
 
-  async deleteSubject(
-    subjectId: string
-  ): Promise<{ ok: boolean }> {
-    await ensureAuthenticated()
+  async deleteSubject(subjectId: string): Promise<{ ok: boolean }> {
+    const { manifest, sha } = await readManifestForWrite()
+    const postsToDelete = manifest.posts.filter((post) => post.subjectId === subjectId)
 
-    const { error } = await supabase
-      .from('subjects')
-      .delete()
-      .eq('id', subjectId)
+    for (const post of postsToDelete) {
+      const file = await getFileWithSha(postFilePath(post.id))
+      if (file) {
+        await deleteFile(
+          postFilePath(post.id),
+          file.sha,
+          `Delete post ${post.id} (cascade from subject ${subjectId})`
+        )
+      }
+    }
 
-    if (error) throw new Error(error.message)
+    const subjectFile = await getFileWithSha(subjectFilePath(subjectId))
+    if (subjectFile) {
+      await deleteFile(subjectFilePath(subjectId), subjectFile.sha, `Delete subject ${subjectId}`)
+    }
+
+    manifest.subjects = manifest.subjects.filter((subject) => subject.id !== subjectId)
+    manifest.posts = manifest.posts.filter((post) => post.subjectId !== subjectId)
+
+    await writeManifest(
+      manifest,
+      sha,
+      `Update manifest: delete subject ${subjectId} and ${postsToDelete.length} post(s)`
+    )
 
     return { ok: true }
   },
@@ -328,124 +280,156 @@ export const cmsApi = {
   // POSTS (admin only)
   // =========================
 
-  async createPost(
-    post: Omit<Post, 'id'>
-  ): Promise<Post> {
-    await ensureAuthenticated()
-
-    const payload = mapPostForDb(post)
-
-    const { data, error } = await supabase
-      .from('posts')
-      .insert(payload)
-      .select('id, title, excerpt, content, date, timeSpent, subjectId')
-      .single()
-
-    if (error) throw new Error(error.message)
-
-    await syncPostTags(data.id, post.tags ?? [])
-
-    const updatedPost = await this.getPost(String(data.id))
-    if (!updatedPost) {
-      throw new Error('Failed to load post after creation.')
+  async createPost(post: Omit<Post, 'id'>): Promise<Post> {
+    const normalizedDate = normalizePostDate(post.date)
+    if (!normalizedDate) {
+      throw new Error('Invalid post date. Use yyyy/mm/dd.')
     }
 
-    return updatedPost
-  },
+    const { manifest, sha } = await readManifestForWrite()
+    const id = computeNextPostId(manifest)
 
-  async updatePost(
-    postId: number,
-    post: Omit<Post, 'id'>
-  ): Promise<Post> {
-    await ensureAuthenticated()
-
-    const payload = mapPostForDb(post)
-
-    const { data, error } = await supabase
-      .from('posts')
-      .update(payload)
-      .eq('id', postId)
-      .select('id, title, excerpt, content, date, timeSpent, subjectId')
-      .single()
-
-    if (error) throw new Error(error.message)
-
-    await syncPostTags(postId, post.tags ?? [])
-
-    const updatedPost = await this.getPost(String(data.id))
-    if (!updatedPost) {
-      throw new Error('Failed to load post after update.')
+    const fullPost: Post = {
+      ...post,
+      id,
+      date: normalizedDate,
+      tags: normalizeTags(post.tags),
     }
 
-    return updatedPost
+    await putFile(
+      postFilePath(id),
+      stringifyFrontmatter(toPostFrontmatter(fullPost), fullPost.content),
+      `Create post: ${fullPost.title}`
+    )
+
+    manifest.posts.push(postSummary(fullPost))
+    await writeManifest(manifest, sha, `Update manifest: add post ${id}`)
+
+    return fullPost
   },
 
-  async deletePost(
-    postId: number
-  ): Promise<{ ok: boolean }> {
-    await ensureAuthenticated()
+  async updatePost(postId: number, post: Omit<Post, 'id'>): Promise<Post> {
+    const normalizedDate = normalizePostDate(post.date)
+    if (!normalizedDate) {
+      throw new Error('Invalid post date. Use yyyy/mm/dd.')
+    }
 
-    const { error } = await supabase
-      .from('posts')
-      .delete()
-      .eq('id', postId)
+    const fullPost: Post = {
+      ...post,
+      id: postId,
+      date: normalizedDate,
+      tags: normalizeTags(post.tags),
+    }
 
-    if (error) throw new Error(error.message)
+    const existingFile = await getFileWithSha(postFilePath(postId))
+    await putFile(
+      postFilePath(postId),
+      stringifyFrontmatter(toPostFrontmatter(fullPost), fullPost.content),
+      `Update post: ${fullPost.title}`,
+      existingFile?.sha
+    )
+
+    const { manifest, sha } = await readManifestForWrite()
+    const index = manifest.posts.findIndex((existing) => existing.id === postId)
+    const summary = postSummary(fullPost)
+    if (index === -1) manifest.posts.push(summary)
+    else manifest.posts[index] = summary
+
+    await writeManifest(manifest, sha, `Update manifest: update post ${postId}`)
+
+    return fullPost
+  },
+
+  async deletePost(postId: number): Promise<{ ok: boolean }> {
+    const file = await getFileWithSha(postFilePath(postId))
+    if (file) {
+      await deleteFile(postFilePath(postId), file.sha, `Delete post ${postId}`)
+    }
+
+    const { manifest, sha } = await readManifestForWrite()
+    manifest.posts = manifest.posts.filter((post) => post.id !== postId)
+    await writeManifest(manifest, sha, `Update manifest: delete post ${postId}`)
 
     return { ok: true }
   },
 
-  async createTag(name: string): Promise<Tag> {
-    await ensureAuthenticated()
+  // =========================
+  // TAGS (admin only)
+  // Tags are derived from post frontmatter, not a standalone entity, so
+  // "editing" a tag means rewriting every post that carries it.
+  // =========================
 
-    const cleanedName = normalizeTagName(name)
-    const slug = toTagSlug(cleanedName)
-
-    if (!cleanedName || !slug) {
-      throw new Error('Invalid tag name.')
+  async renameTag(oldName: string, newName: string): Promise<{ updatedPostIds: number[] }> {
+    const cleanedNewName = newName.trim()
+    if (!cleanedNewName) {
+      throw new Error('Tag name cannot be empty.')
     }
 
-    const { data, error } = await supabase
-      .from('tags')
-      .insert({ name: cleanedName, slug })
-      .select('id, name, slug')
-      .single()
+    const { manifest, sha } = await readManifestForWrite()
+    const affected = manifest.posts.filter((post) => (post.tags ?? []).includes(oldName))
+    const updatedPostIds: number[] = []
 
-    if (error) throw new Error(error.message)
-    return data
-  },
+    for (const summary of affected) {
+      const full = await readPostFile(summary.id)
+      if (!full) continue
 
-  async updateTag(tagId: number, name: string): Promise<Tag> {
-    await ensureAuthenticated()
+      const updated: Post = {
+        ...full,
+        tags: normalizeTags(full.tags.map((tag) => (tag === oldName ? cleanedNewName : tag))),
+      }
 
-    const cleanedName = normalizeTagName(name)
-    const slug = toTagSlug(cleanedName)
+      const existingFile = await getFileWithSha(postFilePath(summary.id))
+      await putFile(
+        postFilePath(summary.id),
+        stringifyFrontmatter(toPostFrontmatter(updated), updated.content),
+        `Rename tag "${oldName}" to "${cleanedNewName}" on post ${summary.id}`,
+        existingFile?.sha
+      )
 
-    if (!cleanedName || !slug) {
-      throw new Error('Invalid tag name.')
+      updatedPostIds.push(summary.id)
     }
 
-    const { data, error } = await supabase
-      .from('tags')
-      .update({ name: cleanedName, slug })
-      .eq('id', tagId)
-      .select('id, name, slug')
-      .single()
+    manifest.posts = manifest.posts.map((post) =>
+      (post.tags ?? []).includes(oldName)
+        ? { ...post, tags: normalizeTags(post.tags.map((tag) => (tag === oldName ? cleanedNewName : tag))) }
+        : post
+    )
 
-    if (error) throw new Error(error.message)
-    return data
+    await writeManifest(manifest, sha, `Update manifest: rename tag "${oldName}" to "${cleanedNewName}"`)
+
+    return { updatedPostIds }
   },
 
-  async deleteTag(tagId: number): Promise<{ ok: boolean }> {
-    await ensureAuthenticated()
+  async removeTag(name: string): Promise<{ updatedPostIds: number[] }> {
+    const { manifest, sha } = await readManifestForWrite()
+    const affected = manifest.posts.filter((post) => (post.tags ?? []).includes(name))
+    const updatedPostIds: number[] = []
 
-    const { error } = await supabase
-      .from('tags')
-      .delete()
-      .eq('id', tagId)
+    for (const summary of affected) {
+      const full = await readPostFile(summary.id)
+      if (!full) continue
 
-    if (error) throw new Error(error.message)
+      const updated: Post = { ...full, tags: full.tags.filter((tag) => tag !== name) }
 
-    return { ok: true }
-  }
+      const existingFile = await getFileWithSha(postFilePath(summary.id))
+      await putFile(
+        postFilePath(summary.id),
+        stringifyFrontmatter(toPostFrontmatter(updated), updated.content),
+        `Remove tag "${name}" from post ${summary.id}`,
+        existingFile?.sha
+      )
+
+      updatedPostIds.push(summary.id)
+    }
+
+    manifest.posts = manifest.posts.map((post) =>
+      (post.tags ?? []).includes(name)
+        ? { ...post, tags: post.tags.filter((tag) => tag !== name) }
+        : post
+    )
+
+    await writeManifest(manifest, sha, `Update manifest: remove tag "${name}"`)
+
+    return { updatedPostIds }
+  },
 }

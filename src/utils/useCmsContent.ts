@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { cmsApi } from './cmsApi'
-import { supabase } from './supabaseClient'
 import type { Post, Subject, Tag, TagSummary } from './dataTypes'
 
 export function useCmsContent() {
@@ -44,43 +43,6 @@ export function useCmsContent() {
 
   useEffect(() => {
     void reload()
-  }, [])
-
-  useEffect(() => {
-    const channel = supabase
-      .channel('content-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'posts' },
-        () => {
-          setTimeout(() => {
-            void reload()
-          }, 100)
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'tags' },
-        () => {
-          setTimeout(() => {
-            void reload()
-          }, 100)
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'post_tags' },
-        () => {
-          setTimeout(() => {
-            void reload()
-          }, 100)
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
   }, [])
 
   return {
