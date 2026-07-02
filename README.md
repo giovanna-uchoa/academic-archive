@@ -4,16 +4,16 @@
 > [!WARNING]
 > Most of this project was vibecoded and/or bootstrapped from boilerplate. Use it as a starting point, not as a reference for best practices.
 
-A personal academic archive built with React, TypeScript, and Supabase. Organize content into subjects and posts, tag entries for cross-cutting discovery, and manage everything through a built-in admin panel.
+A personal academic archive built with React, TypeScript, and a GitHub-backed CMS. Organize content into subjects and posts, tag entries for cross-cutting discovery, and manage everything through a built-in admin panel.
 
 Original UI inspired by [Figma – Personal Tech Portfolio Blog (Community)](https://www.figma.com/design/vGsWTFg8pBClvaGv4ZF62Y/Personal-Tech-Portfolio-Blog--Community-) and [jekyll-theme-chirpy](https://github.com/cotes2020/jekyll-theme-chirpy).
 
 ## Features
 
 - Browse posts grouped by **subject** or explore all entries in the **catalog**
-- **Tag system** — normalized `tags` + `post_tags` tables; assign tags to posts and filter at `/tags/:tagSlug`
+- **Tag system** — tags live as a string array in each post's frontmatter; assign tags to posts and filter at `/tags/:tagSlug`
 - **Archives** — posts grouped by year/month
-- **Admin panel** at `/#/admin` — create, edit, and delete subjects, posts, and tags (requires Supabase auth)
+- **Admin panel** at `/#/admin` — create, edit, and delete subjects, posts, and tags (requires a GitHub Personal Access Token)
 - Dark / light theme toggle
 - Markdown rendering with GFM support (tables, strikethrough, task lists)
 
@@ -25,7 +25,8 @@ Original UI inspired by [Figma – Personal Tech Portfolio Blog (Community)](htt
 | Bundler | Vite |
 | UI | Material UI v5 |
 | Routing | React Router DOM (hash-based) |
-| Backend / DB | Supabase |
+| Backend / DB | GitHub Contents API (`content/` folder in a GitHub repo) |
+| Frontmatter | js-yaml |
 | Markdown | react-markdown + remark-gfm |
 | Icons | lucide-react |
 
@@ -40,45 +41,63 @@ src/
     Footer.tsx
     Hero.tsx
     MarkdownContent.tsx       # GFM renderer (raw HTML is escaped)
-    blog/
-      BlogCard.tsx            # Post preview card
-      BlogPost.tsx            # Full post view with hero header
-      BlogSection.tsx
-    subject/
-      SubjectCard.tsx
-      SubjectsOverview.tsx
     admin/
       AdminHeader.tsx
       LoginDialog.tsx
       PostForm.tsx
       SubjectForm.tsx
+      TagForm.tsx
+    archive/
+      ArchiveMonthGroup.tsx
+      ArchivePostItem.tsx
+      ArchivesHeader.tsx
+    blog/
+      BlogCard.tsx            # Post preview card
+      BlogPost.tsx            # Full post view with hero header
+      BlogSection.tsx
+    catalog/
+      CategoryCard.tsx
+      CategoryHeader.tsx
+    ui/
+      BackButton.tsx
+      Logo.tsx
+      SocialLinks.tsx
+      ThemeToggle.tsx
+      layout/
+        PageContent.tsx
+        PageTopBar.tsx
+      state/
+        Error.tsx
+        Loading.tsx
+        NotFound.tsx
   pages/
     HomePage.tsx              # /
     ArchivesPage.tsx          # /archives
-    CatalogPage.tsx           # /catalog, /catalog/:categoryId
+    CatalogPage.tsx           # /catalog
     SubjectPage.tsx           # /subjects/:subjectId
     PostPage.tsx              # /subjects/:subjectId/post/:postId, /post/:postId
-    TagsPage.tsx              # /tags
-    TagPage.tsx               # /tags/:tagSlug
+    TagsPage.tsx               # /tags
+    TagPage.tsx                # /tags/:tagSlug
     admin/
       AdminPage.tsx           # /admin
   theme/
     muiTheme.ts
     ThemeProvider.tsx
   utils/
-    cmsApi.ts                 # Supabase CRUD + date normalisation
+    cmsApi.ts                 # GitHub-backed CRUD + date normalisation
     contentTaxonomy.ts        # Tag/category summary, archive grouping, date parsing
     dataTypes.ts              # Shared TypeScript types
-    supabaseClient.ts         # Supabase client init
-    useCmsContent.ts          # Data-fetching hook
+    frontmatter.ts             # YAML frontmatter parse/stringify
+    githubAuth.ts               # PAT storage + validation
+    githubClient.ts             # GitHub Contents API transport
+    useCmsContent.ts             # Data-fetching hook
+    usePageTitle.ts
     iconRenderer.tsx
-migrations/
-  20260307_subjects_and_post_schema.sql
-  20260308_access_policies.sql
-  20260313_tags_and_optional_subject_icon.sql
-  20260314_posts_date_to_sql_date.sql
-  20260314_normalize_tags_to_relational_tables.sql
-  20260314_subject_blog_controls.sql
+    socials.ts
+content/
+  manifest.json                # Generated index of subject/post summaries
+  subjects/*.md
+  posts/*.md
 ```
 
 ## Getting started
@@ -89,30 +108,44 @@ migrations/
 npm i
 ```
 
-### 2. Configure Supabase
+### 2. Configure the content repo
 
-Create a `.env` file at the project root:
+Create a `.env` file at the project root (see `.env.sample`):
 
 ```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_APP_NAME=
+VITE_APP_TITLE=
+
+VITE_SOCIAL_GITHUB=
+VITE_SOCIAL_GITLAB=
+VITE_SOCIAL_LINKEDIN=
+VITE_SOCIAL_MAIL=
+
+VITE_GITHUB_OWNER=
+VITE_GITHUB_REPO=
+VITE_GITHUB_BRANCH=main
 ```
 
-### 3. Run DB migrations
+`VITE_GITHUB_OWNER`/`VITE_GITHUB_REPO`/`VITE_GITHUB_BRANCH` point at the GitHub repo holding the `content/` folder. There's no database and no migration step — reads hit `raw.githubusercontent.com` directly, no auth required. Writing (the admin panel) additionally needs a GitHub Personal Access Token with `repo` scope, entered at login — see "Notes" below.
 
-Apply the SQL files in `migrations/` to your Supabase project in order, using the Supabase SQL editor or CLI.
-
-### 4. Run the dev server
+### 3. Run the dev server
 
 ```bash
 npm run dev
 ```
 
-### 5. Linting
+### 4. Linting
 
 ```bash
 npm run lint        # check
 npm run lint:fix    # auto-fix
+```
+
+### 5. Testing
+
+```bash
+npm run test          # run once
+npm run test:watch    # watch mode
 ```
 
 ### 6. Build for production
@@ -123,6 +156,6 @@ npm run build
 
 ## Notes
 
-**Admin panel**: Navigate to `/#/admin`. Authentication is handled via Supabase — configure your project's auth settings before first use.
+**Admin panel**: Navigate to `/#/admin` and enter a GitHub Personal Access Token with `repo` scope on the configured repository. The token is kept only in `sessionStorage` (cleared when the tab closes) — it's never written to `.env` or persisted anywhere else.
 
-**Post dates**: Dates are entered and displayed as `yyyy/mm/dd`. The API layer automatically converts to/from the SQL `DATE` format (`yyyy-mm-dd`) when reading from and writing to Supabase.
+**Post dates**: Dates are entered, stored in frontmatter, and displayed as `yyyy/mm/dd` — there's no separate database storage format to convert to/from.

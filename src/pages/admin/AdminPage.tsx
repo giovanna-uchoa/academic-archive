@@ -55,8 +55,8 @@ function AdminPage() {
       sx={{
         maxWidth: '1200px',
         mx: 'auto',
-        px: 2,
-        py: 4,
+        px: { xs: 2, sm: 3 },
+        py: { xs: 4, sm: 6 },
       }}
     >
       <Stack

@@ -6,6 +6,7 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
 import { cmsApi } from '../../utils/cmsApi';
 import type { Tag } from '../../utils/dataTypes';
 
@@ -145,9 +146,7 @@ function TagForm({ tags, reload, setStatus, setStatusType }: TagFormProps) {
             </Paper>
           ))}
           {tags.length === 0 && (
-            <Typography variant="body2" color="text.secondary">
-              No tags yet — add tags to a post to see them here.
-            </Typography>
+            <Alert severity="info">No tags yet — add tags to a post to see them here.</Alert>
           )}
         </Stack>
       </Stack>

@@ -6,7 +6,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { useCmsContent } from '../utils/useCmsContent';
-import { buildPostTags, toTagSlug, getPostPath } from '../utils/contentTaxonomy';
+import { buildPostTags, getPostTags, toTagSlug, getPostPath } from '../utils/contentTaxonomy';
 import BlogCard from '../components/blog/BlogCard';
 import Loading from '../components/ui/state/Loading';
 import ErrorDisplay from '../components/ui/state/Error';
@@ -25,6 +25,10 @@ export default function TagPage() {
 
   if (error) return <ErrorDisplay message={error} />;
 
+  const tagLabel =
+    filteredPosts.flatMap((post) => getPostTags(post)).find((tag) => toTagSlug(tag) === tagSlug)
+    ?? (tagSlug || '').replace(/-/g, ' ');
+
   return (
     <Stack spacing={3}>
       <Box>
@@ -32,7 +36,7 @@ export default function TagPage() {
         <Typography variant="h3" sx={{ mb: 1 }}>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Hash size={24} />
-            <span>{(tagSlug || '').replace(/-/g, ' ')}</span>
+            <span>{tagLabel}</span>
           </Stack>
         </Typography>
         <Typography variant="body1" color="text.secondary">

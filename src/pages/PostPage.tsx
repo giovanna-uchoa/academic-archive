@@ -1,62 +1,37 @@
-import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { cmsApi } from '../utils/cmsApi';
 import type { Subject, Post } from '../utils/dataTypes';
+import { useAsyncData } from '../utils/useAsyncData';
 import Loading from '../components/ui/state/Loading';
 import NotFound from '../components/ui/state/NotFound';
 import ErrorDisplay from '../components/ui/state/Error';
 import BlogPost from '../components/blog/BlogPost';
 
+interface PostPageData {
+  post: Post | null;
+  subject: Subject | null;
+}
+
 export default function PostPage() {
   const { postId, subjectId } = useParams<{ postId: string; subjectId?: string }>();
   const navigate = useNavigate();
 
-  const [subject, setSubject] = useState<Subject | null>(null);
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
+  const { data, loading, error } = useAsyncData<PostPageData>(async () => {
     if (!postId) {
-      setError('Invalid post id');
-      setLoading(false);
-      return;
+      throw new Error('Invalid post id');
     }
 
-    let cancelled = false;
+    const [postData, subjectData] = await Promise.all([
+      cmsApi.getPost(postId),
+      subjectId ? cmsApi.getSubject(subjectId) : Promise.resolve(null),
+    ]);
 
-    async function load() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [postData, subjectData] = await Promise.all([
-          cmsApi.getPost(postId || ''),
-          subjectId ? cmsApi.getSubject(subjectId) : Promise.resolve(null),
-        ]);
-
-        if (!cancelled) {
-          setPost(postData);
-          setSubject(subjectData);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load content');
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
+    return { post: postData, subject: subjectData };
   }, [postId, subjectId]);
+
+  const post = data?.post ?? null;
+  const subject = data?.subject ?? null;
 
   if (loading) return <Loading />;
 

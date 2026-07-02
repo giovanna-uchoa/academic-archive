@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 
 import type { Post } from '../../utils/dataTypes';
 import { formatPostDate } from '../../utils/contentTaxonomy';
+import { getContentPalette } from '../../theme/muiTheme';
 
 interface BlogCardProps {
   post: Post;
@@ -30,11 +31,7 @@ function BlogCard({ post, onSelectRedirectTo }: BlogCardProps) {
         boxShadow: 'none',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
         '&:hover': {
-          transform: 'translateY(-3px)',
-          boxShadow:
-            theme.palette.mode === 'light'
-              ? '0 18px 32px rgba(64,45,24,0.08)'
-              : '0 18px 32px rgba(0,0,0,0.24)',
+          boxShadow: getContentPalette(theme.palette.mode).elevatedShadow,
           borderColor: theme.palette.primary.light,
         },
       }}

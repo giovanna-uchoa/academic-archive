@@ -1,9 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 
 import { cmsApi } from '../utils/cmsApi';
 import type { Subject, Post } from '../utils/dataTypes';
+import { useAsyncData } from '../utils/useAsyncData';
 import BackButton from '../components/ui/BackButton';
 import MarkdownContent from '../components/MarkdownContent';
 import BlogSection from '../components/blog/BlogSection';
@@ -14,43 +14,29 @@ import PageTopBar from '../components/ui/layout/PageTopBar';
 import PageContent from '../components/ui/layout/PageContent';
 import CategoryHeader from '../components/catalog/CategoryHeader';
 
+interface SubjectPageData {
+  subject: Subject | null;
+  posts: Post[];
+}
+
 function SubjectPage() {
   const { subjectId } = useParams<{ subjectId: string }>();
   const navigate = useNavigate();
 
-  const [subject, setSubject] = useState<Subject | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, loading, error } = useAsyncData<SubjectPageData>(async () => {
+    if (!subjectId) return { subject: null, posts: [] };
 
-  useEffect(() => {
-    if (!subjectId) return;
-
-    async function load() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const subjectData = await cmsApi.getSubject(subjectId || '');
-
-        setSubject(subjectData);
-
-        if (!subjectData?.blogEnabled) {
-          setPosts([]);
-          return;
-        }
-
-        const postsData = await cmsApi.listPostsBySubjectId(subjectId || '');
-        setPosts(postsData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load content');
-      } finally {
-        setLoading(false);
-      }
+    const subjectData = await cmsApi.getSubject(subjectId);
+    if (!subjectData?.blogEnabled) {
+      return { subject: subjectData, posts: [] };
     }
 
-    load();
+    const postsData = await cmsApi.listPostsBySubjectId(subjectId);
+    return { subject: subjectData, posts: postsData };
   }, [subjectId]);
+
+  const subject = data?.subject ?? null;
+  const posts = data?.posts ?? [];
 
   if (loading) return <Loading />;
 

@@ -5,6 +5,8 @@ import Container from '@mui/material/Container';
 import { useTheme } from '@mui/material/styles';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import Loading from './components/ui/state/Loading';
+import { getContentPalette } from './theme/muiTheme';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const SubjectPage = lazy(() => import('./pages/SubjectPage'));
@@ -41,13 +43,10 @@ export default function App() {
               borderRadius: 2,
               p: { xs: 2, sm: 3, md: 4 },
               backgroundColor: theme.palette.background.paper,
-              boxShadow:
-                theme.palette.mode === 'light'
-                  ? '0 16px 40px rgba(48, 29, 7, 0.08)'
-                  : '0 16px 40px rgba(0, 0, 0, 0.22)',
+              boxShadow: getContentPalette(theme.palette.mode).elevatedShadow,
             }}
           >
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<Loading />}>
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/archives" element={<ArchivesPage />} />

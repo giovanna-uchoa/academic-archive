@@ -54,6 +54,7 @@ export default function ArchivesPage() {
                 <Stack spacing={2.5}>
                   {yearGroups.map((group) => (
                     <ArchiveMonthGroup
+                      key={`${group.year}-${group.month}`}
                       group={group}
                       subjectTitles={subjectTitles}
                     />
