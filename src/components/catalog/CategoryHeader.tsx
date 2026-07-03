@@ -15,6 +15,7 @@ function CategoryHeader({ category }: CategoryHeaderProps) {
 
   return (
     <Box>
+      <Typography variant="overline" sx={{ letterSpacing: 2 }}>Subject</Typography>
       <Typography
         variant="h2"
         sx={{

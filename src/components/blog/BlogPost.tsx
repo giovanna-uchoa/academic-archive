@@ -11,6 +11,7 @@ import { useTheme } from '@mui/material/styles';
 import { cmsApi } from '../../utils/cmsApi';
 import type { Post } from '../../utils/dataTypes';
 import { formatPostDate, getPostTags, toTagSlug } from '../../utils/contentTaxonomy';
+import { headingFont } from '../../theme/muiTheme';
 
 import BackButton from '../ui/BackButton';
 import MarkdownContent from '../MarkdownContent';
@@ -115,7 +116,8 @@ function BlogPost({ post, subjectTitle, onBack }: BlogPostProps) {
           <Typography
             component="h1"
             sx={{
-              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+              fontFamily: headingFont,
+              fontSize: { xs: '2.25rem', sm: '2.75rem', md: '3.5rem', lg: '4rem' },
               fontWeight: 700,
               lineHeight: 1.05,
               letterSpacing: '-0.035em',
@@ -150,12 +152,12 @@ function BlogPost({ post, subjectTitle, onBack }: BlogPostProps) {
           >
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
               <Calendar size={16} />
-              <Typography variant="body2">{formattedDate}</Typography>
+              <Typography variant="overline">{formattedDate}</Typography>
             </Stack>
 
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
               <Clock size={16} />
-              <Typography variant="body2">{timeSpent}</Typography>
+              <Typography variant="overline">{timeSpent}</Typography>
             </Stack>
           </Stack>
 

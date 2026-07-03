@@ -31,7 +31,7 @@ function HomePage() {
   const tags = tagSummary.slice(0, 12);
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={{ xs: 4, md: 6 }}>
       <Hero />
 
       <Box
@@ -41,7 +41,7 @@ function HomePage() {
             xs: '1fr',
             lg: '2fr 1fr',
           },
-          gap: { xs: 2, sm: 3 },
+          gap: { xs: 3, sm: 4, lg: 6 },
           width: '100%',
         }}
       >
@@ -50,15 +50,24 @@ function HomePage() {
           <Stack spacing={2.5}>
             <Typography variant="h5">Recent Entries</Typography>
 
-            <Stack spacing={2}>
-              {recentPosts.map((post) => (
-                <BlogCard
-                  key={post.id}
-                  post={post}
-                  onSelectRedirectTo={`post/${post.id}`}
-                />
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                gridAutoRows: { xs: 'auto', sm: 'minmax(200px, auto)' },
+                gap: { xs: 2, sm: 3 },
+              }}
+            >
+              {recentPosts.map((post, index) => (
+                <Box key={post.id} sx={index === 0 ? { gridColumn: { sm: 'span 2' } } : undefined}>
+                  <BlogCard
+                    post={post}
+                    onSelectRedirectTo={`post/${post.id}`}
+                    featured={index === 0}
+                  />
+                </Box>
               ))}
-            </Stack>
+            </Box>
           </Stack>
         </Box>
 

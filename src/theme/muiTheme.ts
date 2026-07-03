@@ -1,7 +1,7 @@
 import { ThemeOptions } from '@mui/material/styles';
 
-const headingFont = ['"Spectral"', '"Palatino Linotype"', '"Book Antiqua"', 'Palatino', 'serif'].join(',');
-const bodyFont = ['"Avenir Next"', '"Segoe UI"', '"Helvetica Neue"', 'sans-serif'].join(',');
+export const headingFont = ['"Fraunces"', '"Palatino Linotype"', '"Book Antiqua"', 'Palatino', 'serif'].join(',');
+const bodyFont = ['"Inter"', '"Segoe UI"', '"Helvetica Neue"', 'sans-serif'].join(',');
 
 export interface ContentPalette {
   markdownCodeBackground: string;
@@ -14,20 +14,20 @@ export interface ContentPalette {
 export function getContentPalette(mode: 'light' | 'dark'): ContentPalette {
   if (mode === 'dark') {
     return {
-      markdownCodeBackground: '#1f2933',
-      markdownCodeText: '#f9fafb',
-      markdownBlockquoteBorder: '#9ca3af',
-      markdownBlockquoteBackground: '#182028',
-      elevatedShadow: '0 18px 32px rgba(0,0,0,0.24)',
+      markdownCodeBackground: '#211c14',
+      markdownCodeText: '#ece4d0',
+      markdownBlockquoteBorder: '#e0a94a',
+      markdownBlockquoteBackground: '#18140f',
+      elevatedShadow: '0 18px 32px rgba(0,0,0,0.36)',
     };
   }
 
   return {
-    markdownCodeBackground: '#eee7dc',
-    markdownCodeText: '#1f1b16',
-    markdownBlockquoteBorder: '#a67c52',
-    markdownBlockquoteBackground: '#f8f4ed',
-    elevatedShadow: '0 18px 32px rgba(64,45,24,0.08)',
+    markdownCodeBackground: '#e9e2cd',
+    markdownCodeText: '#1c2c22',
+    markdownBlockquoteBorder: '#b8863b',
+    markdownBlockquoteBackground: '#faf6ec',
+    elevatedShadow: '0 18px 32px rgba(31,58,46,0.12)',
   };
 }
 
@@ -49,6 +49,9 @@ const sharedTypography: ThemeOptions['typography'] = {
     fontFamily: headingFont,
     fontWeight: 600,
     lineHeight: 1.2,
+    fontSize: '1.75rem',
+    '@media (min-width:600px)': { fontSize: '2.25rem' },
+    '@media (min-width:900px)': { fontSize: '2.75rem' },
   },
   h4: {
     fontFamily: headingFont,
@@ -83,8 +86,8 @@ const sharedTypography: ThemeOptions['typography'] = {
 
 function sharedComponents(mode: 'light' | 'dark'): ThemeOptions['components'] {
   const isLight = mode === 'light';
-  const darkBorder = '#2b3847';
-  const darkHover = '#d39a5f';
+  const darkBorder = '#2e2820';
+  const darkHover = '#e0a94a';
   const content = getContentPalette(mode);
 
   return {
@@ -100,12 +103,12 @@ function sharedComponents(mode: 'light' | 'dark'): ThemeOptions['components'] {
       styleOverrides: {
         root: {
           borderRadius: 10,
-          border: `1px solid ${isLight ? '#e6dbc9' : darkBorder}`,
+          border: `1px solid ${isLight ? '#ddd3ba' : darkBorder}`,
           boxShadow: 'none',
           transition: 'border-color 0.2s ease, transform 0.2s ease',
           '&:hover': {
-            borderColor: isLight ? '#b08a5a' : darkHover,
-            transform: 'translateY(-2px)',
+            borderColor: isLight ? '#b8863b' : darkHover,
+            transform: 'translateY(-4px)',
           },
         },
       },
@@ -130,27 +133,27 @@ function sharedComponents(mode: 'light' | 'dark'): ThemeOptions['components'] {
 export const themeOptions: ThemeOptions = {
   palette: {
     primary: {
-      main: '#2f2418',
-      light: '#64513f',
-      dark: '#1c140d',
-      contrastText: '#fffefb',
+      main: '#1f3a2e',
+      light: '#3f5d4d',
+      dark: '#0f2019',
+      contrastText: '#faf6ec',
     },
     secondary: {
-      main: '#9f6a2f',
-      light: '#d2a16d',
-      dark: '#72491f',
-      contrastText: '#fff',
+      main: '#b8863b',
+      light: '#d1a862',
+      dark: '#8f6526',
+      contrastText: '#1c1610',
     },
     background: {
-      default: '#f7f3ec',
-      paper: '#fffcf6',
+      default: '#f2ebda',
+      paper: '#faf6ec',
     },
     text: {
-      primary: '#33251a',
-      secondary: '#6a5746',
-      disabled: '#9e8c79',
+      primary: '#1c2c22',
+      secondary: '#5c6659',
+      disabled: '#96a08f',
     },
-    divider: '#e6dbc9',
+    divider: '#ddd3ba',
     mode: 'light',
   },
   typography: sharedTypography,
@@ -160,27 +163,27 @@ export const themeOptions: ThemeOptions = {
 export const darkThemeOptions: ThemeOptions = {
   palette: {
     primary: {
-      main: '#dce8f4',
-      light: '#f4f8fc',
-      dark: '#8ea1b6',
-      contrastText: '#0b121a',
+      main: '#ece4d0',
+      light: '#faf6ec',
+      dark: '#c2b8a3',
+      contrastText: '#100e0b',
     },
     secondary: {
-      main: '#e8f1fb',
-      light: '#e8c29a',
-      dark: '#b67839',
-      contrastText: '#0b121a',
+      main: '#e0a94a',
+      light: '#eac47f',
+      dark: '#a97d34',
+      contrastText: '#100e0b',
     },
     background: {
-      default: '#0b121a',
-      paper: '#111b26',
+      default: '#100e0b',
+      paper: '#18140f',
     },
     text: {
-      primary: '#e8f1fb',
-      secondary: '#a8bdd4',
-      disabled: '#6e8399',
+      primary: '#ece4d0',
+      secondary: '#a89e8c',
+      disabled: '#665e50',
     },
-    divider: '#2b3847',
+    divider: '#2e2820',
     mode: 'dark',
   },
   typography: sharedTypography,

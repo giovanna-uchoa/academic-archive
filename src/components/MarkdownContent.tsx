@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
@@ -59,7 +60,7 @@ function MarkdownContent({ content }: MarkdownContentProps) {
       }}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
         components={{
             h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
             <Typography variant="h5" sx={{ mt: 3, mb: 1.5, color: theme.palette.primary.main }} {...props}>
