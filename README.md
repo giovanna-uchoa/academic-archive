@@ -14,7 +14,7 @@ Original UI inspired by [Figma – Personal Tech Portfolio Blog (Community)](htt
 - **Tag system** — tags live as a string array in each post's frontmatter; assign tags to posts and filter at `/tags/:tagSlug`
 - **Archives** — posts grouped by year/month
 - **Admin panel** at `/#/admin` — create, edit, and delete subjects, posts, and tags (requires a GitHub Personal Access Token)
-- Dark / light theme toggle
+- Dark / light theme toggle, both built around a single "special collections reading room" identity (forest green + brass accent on parchment in light mode, a warm neutral near-black in dark mode)
 - Markdown rendering with GFM support (tables, strikethrough, task lists)
 
 ## Tech stack
@@ -29,6 +29,7 @@ Original UI inspired by [Figma – Personal Tech Portfolio Blog (Community)](htt
 | Frontmatter | js-yaml |
 | Markdown | react-markdown + remark-gfm |
 | Icons | lucide-react |
+| Fonts | Fraunces (display) + Inter (body), via Google Fonts |
 
 ## Project structure
 

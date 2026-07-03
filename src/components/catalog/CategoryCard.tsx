@@ -1,5 +1,5 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { LibraryBig } from 'lucide-react';
+import { LibraryBig, ArrowUpRight } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 
 import Box from '@mui/material/Box';
@@ -16,10 +16,12 @@ import { getContentPalette } from '../../theme/muiTheme';
 
 interface CategoryCardProps {
   category: CategorySummary;
+  featured?: boolean;
 }
 
-function CategoryCard({ category }: CategoryCardProps) {
+function CategoryCard({ category, featured = false }: CategoryCardProps) {
   const theme = useTheme();
+  const affordanceSize = featured ? 40 : 32;
 
   function formatText(text: string) {
     if (!text) return "";
@@ -35,6 +37,7 @@ function CategoryCard({ category }: CategoryCardProps) {
     <Card
       variant="outlined"
       sx={{
+        position: 'relative',
         borderColor: 'divider',
         height: '100%',
         width: '100%',
@@ -43,6 +46,10 @@ function CategoryCard({ category }: CategoryCardProps) {
         transition: 'all 0.2s ease',
         '&:hover': {
           boxShadow: getContentPalette(theme.palette.mode).elevatedShadow,
+        },
+        '&:hover .card-open-affordance': {
+          opacity: 1,
+          transform: 'scale(1)',
         },
       }}
     >
@@ -61,7 +68,7 @@ function CategoryCard({ category }: CategoryCardProps) {
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            p: { xs: 2, sm: 2.5 },
+            p: featured ? { xs: 2.5, sm: 3.5 } : { xs: 2, sm: 2.5 },
           }}
         >
           <Stack
@@ -72,6 +79,10 @@ function CategoryCard({ category }: CategoryCardProps) {
             }}
           >
             <Stack spacing={1.2}>
+              <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: 1.5 }}>
+                {category.id.toUpperCase()}
+              </Typography>
+
               <Stack direction="row" spacing={1} alignItems="center">
                 {category.icon?.trim() && (
                   <Box sx={{ color: 'secondary.main' }}>
@@ -79,7 +90,7 @@ function CategoryCard({ category }: CategoryCardProps) {
                   </Box>
                 )}
 
-                <Typography variant="h6">
+                <Typography variant={featured ? 'h5' : 'h6'}>
                   {category.title}
                 </Typography>
               </Stack>
@@ -89,7 +100,7 @@ function CategoryCard({ category }: CategoryCardProps) {
                 color="text.secondary"
                 sx={{
                   display: '-webkit-box',
-                  WebkitLineClamp: 2,
+                  WebkitLineClamp: featured ? 4 : 2,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
                 }}
@@ -107,6 +118,29 @@ function CategoryCard({ category }: CategoryCardProps) {
           </Stack>
         </CardContent>
       </CardActionArea>
+
+      <Box
+        className="card-open-affordance"
+        sx={{
+          position: 'absolute',
+          right: 16,
+          bottom: 16,
+          width: affordanceSize,
+          height: affordanceSize,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: theme.palette.secondary.main,
+          color: theme.palette.secondary.contrastText,
+          opacity: 0,
+          transform: 'scale(0.8)',
+          transition: 'opacity 0.2s ease, transform 0.2s ease',
+          pointerEvents: 'none',
+        }}
+      >
+        <ArrowUpRight size={featured ? 18 : 16} />
+      </Box>
     </Card>
   );
 }

@@ -34,6 +34,7 @@ function NotFound({
         sx={{
           mb: 2,
           color: theme.palette.primary.main,
+          fontSize: '2rem',
         }}
       >
         {title}

@@ -35,19 +35,19 @@ export default function CatalogPage() {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            md: '1fr 1fr',
-          },
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+          gridAutoRows: { xs: 'auto', sm: 'minmax(220px, auto)' },
           gap: { xs: 2, sm: 3 },
           width: '100%',
         }}
       >
-        {categories.map((category) => (
-          <CategoryCard
+        {categories.map((category, index) => (
+          <Box
             key={category.id}
-            category={category}
-          />
+            sx={index === 0 ? { gridColumn: { sm: 'span 2' }, gridRow: { sm: 'span 2' } } : undefined}
+          >
+            <CategoryCard category={category} featured={index === 0} />
+          </Box>
         ))}
       </Box>
     </Stack>

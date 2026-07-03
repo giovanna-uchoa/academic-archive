@@ -62,10 +62,24 @@ function Header() {
                 to={item.href}
                 onClick={handleCloseMenu}
                 sx={{
+                  position: 'relative',
                   textTransform: 'none',
                   fontSize: '0.95rem',
                   color: isActiveRoute(item.href) ? theme.palette.primary.main : theme.palette.text.secondary,
                   '&:hover': { color: theme.palette.primary.main, backgroundColor: 'transparent' },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    left: 8,
+                    right: 8,
+                    bottom: 6,
+                    height: '2px',
+                    backgroundColor: theme.palette.secondary.main,
+                    transform: isActiveRoute(item.href) ? 'scaleX(1)' : 'scaleX(0)',
+                    transformOrigin: 'center',
+                    transition: 'transform 0.25s ease',
+                  },
+                  '&:hover::after': { transform: 'scaleX(1)' },
                 }}
               >
                 {item.label}
