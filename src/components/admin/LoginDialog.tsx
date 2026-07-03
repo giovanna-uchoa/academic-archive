@@ -10,11 +10,12 @@ import {
   Stack
 } from '@mui/material'
 import { setStoredToken, validateToken } from '../../utils/githubAuth'
+import type { GitHubUser } from '../../utils/githubAuth'
 
 interface Props {
   open: boolean
   onClose: () => void
-  onSuccess: (login: string) => void
+  onSuccess: (user: GitHubUser) => void
 }
 
 function LoginDialog({ open, onClose, onSuccess }: Props) {
@@ -30,7 +31,7 @@ function LoginDialog({ open, onClose, onSuccess }: Props) {
       const user = await validateToken(token.trim())
       setStoredToken(token.trim())
       setToken('')
-      onSuccess(user.login)
+      onSuccess(user)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')

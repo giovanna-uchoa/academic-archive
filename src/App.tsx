@@ -10,7 +10,11 @@ import { getContentPalette } from './theme/muiTheme';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const SubjectPage = lazy(() => import('./pages/SubjectPage'));
-const AdminPage = lazy(() => import('./pages/admin/AdminPage'));
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
+const AdminSubjectsPage = lazy(() => import('./pages/admin/AdminSubjectsPage'));
+const AdminPostsPage = lazy(() => import('./pages/admin/AdminPostsPage'));
+const AdminTagsPage = lazy(() => import('./pages/admin/AdminTagsPage'));
 const ArchivesPage = lazy(() => import('./pages/ArchivesPage'));
 const CatalogPage = lazy(() => import('./pages/CatalogPage'));
 const TagsPage = lazy(() => import('./pages/TagsPage'));
@@ -56,7 +60,15 @@ export default function App() {
                 <Route path="/subjects/:subjectId" element={<SubjectPage />} />
                 <Route path="/subjects/:subjectId/post/:postId" element={<PostPage />} />
                 <Route path="/post/:postId" element={<PostPage />} />
-                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboardPage />} />
+                  <Route path="subjects" element={<AdminSubjectsPage />} />
+                  <Route path="subjects/:subjectId" element={<AdminSubjectsPage />} />
+                  <Route path="posts" element={<AdminPostsPage />} />
+                  <Route path="posts/:postId" element={<AdminPostsPage />} />
+                  <Route path="tags" element={<AdminTagsPage />} />
+                  <Route path="tags/:tagSlug" element={<AdminTagsPage />} />
+                </Route>
               </Routes>
             </Suspense>
           </Box>

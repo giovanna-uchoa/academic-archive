@@ -14,6 +14,7 @@ export function clearStoredToken(): void {
 
 export interface GitHubUser {
   login: string
+  avatar_url?: string
 }
 
 export async function validateToken(token: string): Promise<GitHubUser> {

@@ -161,3 +161,35 @@ export function formatPostDate(value: string): string {
 export function toTagSlug(value: string): string {
   return normalizeTag(value);
 }
+
+export interface MonthlyActivityPoint {
+  year: number;
+  month: number;
+  count: number;
+}
+
+export function buildMonthlyActivity(posts: Post[], monthsBack = 12): MonthlyActivityPoint[] {
+  const now = new Date();
+  const points: MonthlyActivityPoint[] = [];
+
+  for (let offset = monthsBack - 1; offset >= 0; offset -= 1) {
+    const date = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+    points.push({ year: date.getFullYear(), month: date.getMonth(), count: 0 });
+  }
+
+  const countByKey = new Map<string, number>();
+  for (const post of posts) {
+    const date = getPostDate(post);
+    const key = `${date.getFullYear()}-${date.getMonth()}`;
+    countByKey.set(key, (countByKey.get(key) ?? 0) + 1);
+  }
+
+  return points.map((point) => ({
+    ...point,
+    count: countByKey.get(`${point.year}-${point.month}`) ?? 0,
+  }));
+}
+
+export function formatAccessionNumber(id: number): string {
+  return `№${String(id).padStart(3, '0')}`;
+}

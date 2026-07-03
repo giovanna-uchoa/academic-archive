@@ -3,9 +3,11 @@ import Typography from '@mui/material/Typography'
 import Stack from '@mui/material/Stack'
 import Button from '@mui/material/Button'
 import Alert from '@mui/material/Alert'
+import Avatar from '@mui/material/Avatar'
+import type { GitHubUser } from '../../utils/githubAuth'
 
 interface AdminHeaderProps {
-  userLabel: string | null
+  user: GitHubUser | null
   onLoginClick: () => void
   onLogout: () => void
   status: string | null
@@ -15,7 +17,7 @@ interface AdminHeaderProps {
 }
 
 function AdminHeader({
-  userLabel,
+  user,
   onLoginClick,
   onLogout,
   status,
@@ -42,10 +44,13 @@ function AdminHeader({
           Manage subjects and posts stored in this GitHub repository.
         </Typography>
 
-        {userLabel ? (
+        {user ? (
           <Stack direction="row" spacing={2} alignItems="center">
+            <Avatar sx={{ width: 32, height: 32 }} src={user.avatar_url} alt={user.login}>
+              {user.login.charAt(0).toUpperCase()}
+            </Avatar>
             <Typography variant="body2">
-              Logged as: <strong>{userLabel}</strong>
+              Logged as: <strong>{user.login}</strong>
             </Typography>
             <Button
               variant="outlined"
