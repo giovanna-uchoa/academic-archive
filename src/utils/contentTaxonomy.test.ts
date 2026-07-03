@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildArchiveGroups,
-  buildCategorySummary,
+  buildMonthlyActivity,
+  buildSubjectSummary,
+  dedupeTags,
+  formatAccessionNumber,
+  formatPostDate,
+  getPostDate,
+  getPostPath,
+  getPostTags,
   normalizePostDate,
   sortPostsByDateDesc,
-  toPostStorageDate,
   toTagSlug,
 } from './contentTaxonomy'
 import type { Post, Subject } from './dataTypes'
@@ -35,10 +41,6 @@ describe('date helpers', () => {
   it('rejects an invalid date', () => {
     expect(normalizePostDate('not-a-date')).toBeNull()
     expect(normalizePostDate('2026/13/40')).toBeNull()
-  })
-
-  it('converts to SQL dash form', () => {
-    expect(toPostStorageDate('2026/02/28')).toBe('2026-02-28')
   })
 })
 
@@ -71,7 +73,7 @@ describe('buildArchiveGroups', () => {
   })
 })
 
-describe('buildCategorySummary', () => {
+describe('buildSubjectSummary', () => {
   const subjects: Subject[] = [
     { id: 'mac0470', title: 'Floss', description: '', overview: '', icon: null, blogEnabled: true, blogSectionTitle: 'Articles' },
     { id: 'mac0500', title: 'TCC', description: '', overview: '', icon: null, blogEnabled: false, blogSectionTitle: 'Articles' },
@@ -84,7 +86,7 @@ describe('buildCategorySummary', () => {
       makePost({ id: 4, subjectId: 'mac0500' }),
     ]
 
-    const summary = buildCategorySummary(subjects, posts)
+    const summary = buildSubjectSummary(subjects, posts)
     const bySubject = new Map(summary.map((s) => [s.id, s.totalPosts]))
 
     expect(bySubject.get('mac0470')).toBe(2)
@@ -96,5 +98,76 @@ describe('toTagSlug', () => {
   it('slugifies accented and mixed-case tag names', () => {
     expect(toTagSlug('Linux Kernel')).toBe('linux-kernel')
     expect(toTagSlug('Ciência Aberta')).toBe('ciencia-aberta')
+  })
+})
+
+describe('getPostPath', () => {
+  it('builds the subject-scoped post URL', () => {
+    expect(getPostPath({ id: 15, subjectId: 'mac0470' })).toBe('/subjects/mac0470/post/15')
+  })
+})
+
+describe('getPostDate', () => {
+  it('parses a valid post date', () => {
+    const date = getPostDate(makePost({ date: '2026/07/02' }))
+    expect(date.getFullYear()).toBe(2026)
+    expect(date.getMonth()).toBe(6)
+    expect(date.getDate()).toBe(2)
+  })
+
+  it('falls back to the epoch for an invalid date', () => {
+    expect(getPostDate(makePost({ date: 'not-a-date' })).getTime()).toBe(0)
+  })
+})
+
+describe('dedupeTags / getPostTags', () => {
+  it('trims, dedupes, and drops empty tags', () => {
+    expect(dedupeTags([' floss ', 'floss', '', '  '])).toEqual(['floss'])
+    expect(dedupeTags(undefined)).toEqual([])
+  })
+
+  it('getPostTags applies the same normalization to a post', () => {
+    expect(getPostTags(makePost({ tags: [' floss ', 'floss', 'linux-kernel'] }))).toEqual([
+      'floss',
+      'linux-kernel',
+    ])
+  })
+})
+
+describe('formatPostDate', () => {
+  it('formats a valid date as a short human-readable string', () => {
+    expect(formatPostDate('2026/07/02')).toMatch(/2026/)
+  })
+
+  it('falls back to the raw value for an invalid date', () => {
+    expect(formatPostDate('not-a-date')).toBe('not-a-date')
+  })
+})
+
+describe('formatAccessionNumber', () => {
+  it('zero-pads the post id with a № prefix', () => {
+    expect(formatAccessionNumber(5)).toBe('№005')
+    expect(formatAccessionNumber(123)).toBe('№123')
+  })
+})
+
+describe('buildMonthlyActivity', () => {
+  it('returns one point per month with post counts, most recent months included', () => {
+    const now = new Date()
+    const currentMonthDate = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/01`
+
+    const posts = [
+      makePost({ id: 1, date: currentMonthDate }),
+      makePost({ id: 2, date: currentMonthDate }),
+    ]
+
+    const points = buildMonthlyActivity(posts, 3)
+
+    expect(points).toHaveLength(3)
+    expect(points[points.length - 1]).toMatchObject({
+      year: now.getFullYear(),
+      month: now.getMonth(),
+      count: 2,
+    })
   })
 })

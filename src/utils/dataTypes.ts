@@ -24,7 +24,7 @@ export interface Tag {
   slug: string;
 }
 
-export interface CategorySummary {
+export interface SubjectSummary {
   id: string;
   title: string;
   description: string;

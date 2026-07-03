@@ -1,0 +1,9 @@
+export const ADMIN_DASHBOARD_PATH = '/admin';
+
+export const ADMIN_SUBJECTS_SEGMENT = 'subjects';
+export const ADMIN_POSTS_SEGMENT = 'posts';
+export const ADMIN_TAGS_SEGMENT = 'tags';
+
+export const ADMIN_SUBJECTS_PATH = `${ADMIN_DASHBOARD_PATH}/${ADMIN_SUBJECTS_SEGMENT}`;
+export const ADMIN_POSTS_PATH = `${ADMIN_DASHBOARD_PATH}/${ADMIN_POSTS_SEGMENT}`;
+export const ADMIN_TAGS_PATH = `${ADMIN_DASHBOARD_PATH}/${ADMIN_TAGS_SEGMENT}`;

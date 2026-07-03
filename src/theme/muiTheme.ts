@@ -84,11 +84,13 @@ const sharedTypography: ThemeOptions['typography'] = {
   },
 };
 
+const lightDivider = '#ddd3ba';
+const lightSecondaryMain = '#b8863b';
+const darkDivider = '#2e2820';
+const darkSecondaryMain = '#e0a94a';
+
 function sharedComponents(mode: 'light' | 'dark'): ThemeOptions['components'] {
   const isLight = mode === 'light';
-  const darkBorder = '#2e2820';
-  const darkHover = '#e0a94a';
-  const content = getContentPalette(mode);
 
   return {
     MuiButton: {
@@ -103,11 +105,11 @@ function sharedComponents(mode: 'light' | 'dark'): ThemeOptions['components'] {
       styleOverrides: {
         root: {
           borderRadius: 10,
-          border: `1px solid ${isLight ? '#ddd3ba' : darkBorder}`,
+          border: `1px solid ${isLight ? lightDivider : darkDivider}`,
           boxShadow: 'none',
           transition: 'border-color 0.2s ease, transform 0.2s ease',
           '&:hover': {
-            borderColor: isLight ? '#b8863b' : darkHover,
+            borderColor: isLight ? lightSecondaryMain : darkSecondaryMain,
             transform: 'translateY(-4px)',
           },
         },
@@ -139,7 +141,7 @@ export const themeOptions: ThemeOptions = {
       contrastText: '#faf6ec',
     },
     secondary: {
-      main: '#b8863b',
+      main: lightSecondaryMain,
       light: '#d1a862',
       dark: '#8f6526',
       contrastText: '#1c1610',
@@ -153,7 +155,7 @@ export const themeOptions: ThemeOptions = {
       secondary: '#5c6659',
       disabled: '#96a08f',
     },
-    divider: '#ddd3ba',
+    divider: lightDivider,
     mode: 'light',
   },
   typography: sharedTypography,
@@ -169,7 +171,7 @@ export const darkThemeOptions: ThemeOptions = {
       contrastText: '#100e0b',
     },
     secondary: {
-      main: '#e0a94a',
+      main: darkSecondaryMain,
       light: '#eac47f',
       dark: '#a97d34',
       contrastText: '#100e0b',
@@ -183,7 +185,7 @@ export const darkThemeOptions: ThemeOptions = {
       secondary: '#a89e8c',
       disabled: '#665e50',
     },
-    divider: '#2e2820',
+    divider: darkDivider,
     mode: 'dark',
   },
   typography: sharedTypography,

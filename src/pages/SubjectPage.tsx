@@ -7,12 +7,11 @@ import { useAsyncData } from '../utils/useAsyncData';
 import BackButton from '../components/ui/BackButton';
 import MarkdownContent from '../components/MarkdownContent';
 import BlogSection from '../components/blog/BlogSection';
-import Loading from '../components/ui/state/Loading';
+import AsyncBoundary from '../components/ui/state/AsyncBoundary';
 import NotFound from '../components/ui/state/NotFound';
-import ErrorDisplay from '../components/ui/state/Error';
 import PageTopBar from '../components/ui/layout/PageTopBar';
 import PageContent from '../components/ui/layout/PageContent';
-import CategoryHeader from '../components/catalog/CategoryHeader';
+import SubjectHeader from '../components/catalog/SubjectHeader';
 
 interface SubjectPageData {
   subject: Subject | null;
@@ -38,28 +37,28 @@ function SubjectPage() {
   const subject = data?.subject ?? null;
   const posts = data?.posts ?? [];
 
-  if (loading) return <Loading />;
-
-  if (error) return <ErrorDisplay message={error} />;
-
-  if (!subject) return <NotFound title="Subject not found" />;
-
   return (
-    <Box sx={{ width: '100%' }}>
-      <PageTopBar>
-       <BackButton onClick={() => navigate('/catalog')} />
-      </PageTopBar>
+    <AsyncBoundary loading={loading} error={error}>
+      {!subject ? (
+        <NotFound title="Subject not found" />
+      ) : (
+        <Box sx={{ width: '100%' }}>
+          <PageTopBar>
+            <BackButton onClick={() => navigate('/catalog')} />
+          </PageTopBar>
 
-      <PageContent>
-        <CategoryHeader category={subject} />
+          <PageContent>
+            <SubjectHeader subject={subject} />
 
-        {subject.overview && <MarkdownContent content={subject.overview} />}
+            {subject.overview && <MarkdownContent content={subject.overview} />}
 
-        {subject.blogEnabled && (
-          <BlogSection subject={subject} subjectPosts={posts} />
-        )}
-      </PageContent>
-    </Box>
+            {subject.blogEnabled && (
+              <BlogSection subject={subject} subjectPosts={posts} />
+            )}
+          </PageContent>
+        </Box>
+      )}
+    </AsyncBoundary>
   );
 }
 

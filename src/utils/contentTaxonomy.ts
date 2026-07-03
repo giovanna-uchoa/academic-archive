@@ -1,4 +1,4 @@
-import type { ArchiveGroup, CategorySummary, Post, Subject } from './dataTypes';
+import type { ArchiveGroup, SubjectSummary, Post, Subject } from './dataTypes';
 
 export function getPostPath(post: Pick<Post, 'id' | 'subjectId'>): string {
   return `/subjects/${post.subjectId}/post/${post.id}`;
@@ -52,12 +52,6 @@ export function normalizePostDate(value: string): string | null {
   return toYmdString(parts, '/');
 }
 
-export function toPostStorageDate(value: string): string | null {
-  const parts = parsePostDateParts(value);
-  if (!parts) return null;
-  return toYmdString(parts, '-');
-}
-
 function parseDateToken(value: string): Date | null {
   const parts = parsePostDateParts(value);
   if (!parts) return null;
@@ -72,14 +66,19 @@ export function sortPostsByDateDesc(posts: Post[]): Post[] {
   return [...posts].sort((a, b) => getPostDate(b).getTime() - getPostDate(a).getTime());
 }
 
-export function buildCategorySummary(subjects: Subject[], posts: Post[]): CategorySummary[] {
+export function buildSubjectSummary(subjects: Subject[], posts: Post[]): SubjectSummary[] {
+  const countBySubject = new Map<string, number>();
+  for (const post of posts) {
+    countBySubject.set(post.subjectId, (countBySubject.get(post.subjectId) ?? 0) + 1);
+  }
+
   return subjects
     .map((subject) => ({
       id: subject.id,
       title: subject.title,
       description: subject.description,
       icon: subject.icon,
-      totalPosts: subject.blogEnabled ? posts.filter((post) => post.subjectId === subject.id).length : 0,
+      totalPosts: subject.blogEnabled ? countBySubject.get(subject.id) ?? 0 : 0,
     }))
     .sort((a, b) => b.totalPosts - a.totalPosts || a.title.localeCompare(b.title));
 }
@@ -94,17 +93,12 @@ function normalizeTag(rawTag: string): string {
     .replace(/^-|-$/g, '');
 }
 
+export function dedupeTags(tags: string[] | undefined): string[] {
+  return [...new Set((tags ?? []).map((tag) => tag.trim()).filter(Boolean))];
+}
+
 export function getPostTags(post: Post): string[] {
-  const tags = new Set<string>();
-
-  for (const explicitTag of post.tags ?? []) {
-    const cleaned = explicitTag.trim();
-    if (cleaned) {
-      tags.add(cleaned);
-    }
-  }
-
-  return [...tags];
+  return dedupeTags(post.tags);
 }
 
 export function buildPostTags(posts: Post[]): Record<number, string[]> {

@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { setStoredToken, validateToken } from '../../utils/githubAuth'
 import type { GitHubUser } from '../../utils/githubAuth'
+import { getErrorMessage } from '../../utils/errors'
 
 interface Props {
   open: boolean
@@ -34,7 +35,7 @@ function LoginDialog({ open, onClose, onSuccess }: Props) {
       onSuccess(user)
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      setError(getErrorMessage(err, 'Login failed'))
     } finally {
       setLoading(false)
     }

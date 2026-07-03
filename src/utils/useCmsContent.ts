@@ -1,55 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
 import { cmsApi } from './cmsApi'
-import type { Post, Subject, Tag, TagSummary } from './dataTypes'
+import { useAsyncData } from './useAsyncData'
 
 export function useCmsContent() {
-  const [subjects, setSubjects] = useState<Subject[]>([])
-  const [posts, setPosts] = useState<Post[]>([])
-  const [tags, setTags] = useState<Tag[]>([])
-  const [tagSummary, setTagSummary] = useState<TagSummary[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const loadingRef = useRef(false)
-
-  const reload = useCallback(async () => {
-    if (loadingRef.current) return
-
-    loadingRef.current = true
-    setLoading(true)
-    setError(null)
-
-    try {
-      const [nextSubjects, nextPosts, nextTags, nextTagSummary] = await Promise.all([
-        cmsApi.listSubjects(),
-        cmsApi.listPosts(),
-        cmsApi.listTags(),
-        cmsApi.listTagSummary(),
-      ])
-
-      setSubjects(nextSubjects)
-      setPosts(nextPosts)
-      setTags(nextTags)
-      setTagSummary(nextTagSummary)
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to load content'
-      )
-    } finally {
-      loadingRef.current = false
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void reload()
-  }, [])
+  const { data, loading, error, reload } = useAsyncData(() => cmsApi.listAll(), [])
 
   return {
-    subjects,
-    posts,
-    tags,
-    tagSummary,
+    subjects: data?.subjects ?? [],
+    posts: data?.posts ?? [],
+    tags: data?.tags ?? [],
+    tagSummary: data?.tagSummary ?? [],
     loading,
     error,
     reload,

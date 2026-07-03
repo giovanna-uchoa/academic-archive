@@ -1,4 +1,4 @@
-import { SubmitEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { SubmitEvent, useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -15,11 +15,12 @@ import { LibraryBig } from 'lucide-react';
 import { cmsApi } from '../../utils/cmsApi';
 import { renderSubjectIcon } from '../../utils/iconRenderer';
 import type { Post, Subject } from '../../utils/dataTypes';
-import { buildCategorySummary } from '../../utils/contentTaxonomy';
+import { buildSubjectSummary } from '../../utils/contentTaxonomy';
 import MarkdownEditor from './MarkdownEditor';
 import ConfirmDialog from './ConfirmDialog';
 import AdminListItem from './AdminListItem';
-import { useDirtyGuard } from './useDirtyGuard';
+import SectionLabel from './SectionLabel';
+import { useAdminCrudForm } from './useAdminCrudForm';
 
 interface SubjectFormProps {
   subjects: Subject[];
@@ -27,7 +28,7 @@ interface SubjectFormProps {
   reload: () => Promise<void>;
   setStatus: (status: string | null) => void;
   setStatusType: (type: 'success' | 'error') => void;
-  initialEditId?: string | null;
+  initialEditValue?: string | null;
   onEditComplete?: () => void;
   registerDirty?: (dirty: boolean) => void;
 }
@@ -44,52 +45,44 @@ const EMPTY_SUBJECT: Subject = {
 
 const ID_PATTERN = /^[a-z0-9-]+$/;
 
-function SectionLabel({ children }: { children: string }) {
-  return (
-    <Typography variant="subtitle2" color="text.secondary" sx={{ letterSpacing: 0.5 }}>
-      {children}
-    </Typography>
-  );
-}
-
 function SubjectForm({
   subjects,
   posts,
   reload,
   setStatus,
   setStatusType,
-  initialEditId,
+  initialEditValue,
   onEditComplete,
   registerDirty,
 }: SubjectFormProps) {
-  const [subjectForm, setSubjectForm] = useState<Subject>(EMPTY_SUBJECT);
   const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const formRef = useRef<HTMLDivElement>(null);
-  const { setBaseline } = useDirtyGuard(subjectForm, registerDirty);
+  const {
+    form: subjectForm,
+    setForm: setSubjectForm,
+    isSubmitting,
+    formRef,
+    resetForm,
+    loadForm,
+    runAction,
+  } = useAdminCrudForm<Subject>({ initialValue: EMPTY_SUBJECT, registerDirty });
 
-  const categorySummary = useMemo(() => buildCategorySummary(subjects, posts), [subjects, posts]);
+  const subjectSummary = useMemo(() => buildSubjectSummary(subjects, posts), [subjects, posts]);
   const postCountById = useMemo(
-    () => new Map(categorySummary.map(category => [category.id, category.totalPosts])),
-    [categorySummary]
+    () => new Map(subjectSummary.map(subject => [subject.id, subject.totalPosts])),
+    [subjectSummary]
   );
 
   useEffect(() => {
-    if (initialEditId) {
-      const subject = subjects.find(item => item.id === initialEditId);
+    if (initialEditValue) {
+      const subject = subjects.find(item => item.id === initialEditValue);
       if (subject) handleEditSubject(subject);
     }
-  }, [initialEditId, subjects]);
+  }, [initialEditValue, subjects]);
 
-  const clearStatus = () => {
-    setStatus(null);
-  };
-
-  const resetForm = () => {
+  const resetFormState = () => {
     setEditingSubjectId(null);
-    setSubjectForm(EMPTY_SUBJECT);
-    setBaseline(EMPTY_SUBJECT);
+    resetForm();
   };
 
   const idError =
@@ -99,7 +92,6 @@ function SubjectForm({
 
   const handleSubjectSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
-    clearStatus();
 
     if (idError) {
       setStatusType('error');
@@ -107,66 +99,49 @@ function SubjectForm({
       return;
     }
 
-    setIsSubmitting(true);
+    const wasEditing = editingSubjectId !== null;
 
-    try {
-      const wasEditing = editingSubjectId !== null;
-
-      if (editingSubjectId) {
-        await cmsApi.updateSubject(editingSubjectId, subjectForm);
-        setStatusType('success');
-        setStatus(`Subject "${subjectForm.title}" updated.`);
-      } else {
-        await cmsApi.createSubject(subjectForm);
-        setStatusType('success');
-        setStatus(`Subject "${subjectForm.title}" created.`);
+    const result = await runAction(
+      () =>
+        editingSubjectId
+          ? cmsApi.updateSubject(editingSubjectId, subjectForm)
+          : cmsApi.createSubject(subjectForm),
+      {
+        onSuccess: () => `Subject "${subjectForm.title}" ${editingSubjectId ? 'updated' : 'created'}.`,
+        resetOnSuccess: resetFormState,
+        fallbackErrorMessage: 'Subject save failed',
+        setStatus,
+        setStatusType,
+        reload,
       }
+    );
 
-      resetForm();
-      await reload();
-      if (wasEditing) onEditComplete?.();
-    } catch (err) {
-      setStatusType('error');
-      setStatus(err instanceof Error ? err.message : 'Subject save failed');
-    } finally {
-      setIsSubmitting(false);
-    }
+    if (result && wasEditing) onEditComplete?.();
   };
 
   const handleEditSubject = (subject: Subject) => {
-    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setSubjectForm(subject);
     setEditingSubjectId(subject.id);
-    setBaseline(subject);
-    clearStatus();
+    loadForm(subject);
+    setStatus(null);
   };
 
   const handleDeleteSubject = async (subjectId: string) => {
-    clearStatus();
-    setIsSubmitting(true);
+    const wasEditing = editingSubjectId === subjectId;
 
-    try {
-      await cmsApi.deleteSubject(subjectId);
-      setStatusType('success');
-      setStatus('Subject deleted. Associated posts were also removed.');
+    const result = await runAction(() => cmsApi.deleteSubject(subjectId), {
+      onSuccess: () => 'Subject deleted. Associated posts were also removed.',
+      resetOnSuccess: wasEditing ? resetFormState : undefined,
+      fallbackErrorMessage: 'Delete failed',
+      setStatus,
+      setStatusType,
+      reload,
+    });
 
-      const wasEditing = editingSubjectId === subjectId;
-      if (wasEditing) {
-        resetForm();
-      }
-
-      await reload();
-      if (wasEditing) onEditComplete?.();
-    } catch (err) {
-      setStatusType('error');
-      setStatus(err instanceof Error ? err.message : 'Delete failed');
-    } finally {
-      setIsSubmitting(false);
-    }
+    if (result && wasEditing) onEditComplete?.();
   };
 
   const handleCancel = () => {
-    resetForm();
+    resetFormState();
     onEditComplete?.();
   };
 

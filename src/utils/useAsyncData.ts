@@ -1,44 +1,55 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { getErrorMessage } from './errors'
 
 export interface AsyncDataState<T> {
   data: T | null
   loading: boolean
   error: string | null
-  reload: () => void
+  reload: () => Promise<void>
 }
 
 export function useAsyncData<T>(loadFn: () => Promise<T>, deps: unknown[]): AsyncDataState<T> {
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [reloadTick, setReloadTick] = useState(0)
 
   const loadFnRef = useRef(loadFn)
   loadFnRef.current = loadFn
 
-  const reload = useCallback(() => setReloadTick((tick) => tick + 1), [])
+  // Guards against overlapping calls to `reload()` on a hook whose deps never
+  // change (nothing else would stop two manual reloads racing each other).
+  const loadingRef = useRef(false)
+  // Guards against a load started for a since-superseded `deps` value (e.g.
+  // fast subject-to-subject navigation) landing after a newer one already resolved.
+  const epochRef = useRef(0)
 
-  useEffect(() => {
-    let cancelled = false
+  const load = useCallback(async () => {
+    if (loadingRef.current) return
+    loadingRef.current = true
+    const epoch = epochRef.current
 
     setLoading(true)
     setError(null)
 
-    loadFnRef.current()
-      .then((result) => {
-        if (!cancelled) setData(result)
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load content')
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
+    try {
+      const result = await loadFnRef.current()
+      if (epochRef.current === epoch) setData(result)
+    } catch (err) {
+      if (epochRef.current === epoch) setError(getErrorMessage(err, 'Failed to load content'))
+    } finally {
+      if (epochRef.current === epoch) setLoading(false)
+      loadingRef.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    void load()
 
     return () => {
-      cancelled = true
+      epochRef.current += 1
+      loadingRef.current = false
     }
-  }, [...deps, reloadTick])
+  }, deps)
 
-  return { data, loading, error, reload }
+  return { data, loading, error, reload: load }
 }

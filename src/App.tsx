@@ -7,6 +7,12 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/ui/state/Loading';
 import { getContentPalette } from './theme/muiTheme';
+import {
+  ADMIN_DASHBOARD_PATH,
+  ADMIN_SUBJECTS_SEGMENT,
+  ADMIN_POSTS_SEGMENT,
+  ADMIN_TAGS_SEGMENT,
+} from './pages/admin/adminSections';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const SubjectPage = lazy(() => import('./pages/SubjectPage'));
@@ -60,14 +66,14 @@ export default function App() {
                 <Route path="/subjects/:subjectId" element={<SubjectPage />} />
                 <Route path="/subjects/:subjectId/post/:postId" element={<PostPage />} />
                 <Route path="/post/:postId" element={<PostPage />} />
-                <Route path="/admin" element={<AdminLayout />}>
+                <Route path={ADMIN_DASHBOARD_PATH} element={<AdminLayout />}>
                   <Route index element={<AdminDashboardPage />} />
-                  <Route path="subjects" element={<AdminSubjectsPage />} />
-                  <Route path="subjects/:subjectId" element={<AdminSubjectsPage />} />
-                  <Route path="posts" element={<AdminPostsPage />} />
-                  <Route path="posts/:postId" element={<AdminPostsPage />} />
-                  <Route path="tags" element={<AdminTagsPage />} />
-                  <Route path="tags/:tagSlug" element={<AdminTagsPage />} />
+                  <Route path={ADMIN_SUBJECTS_SEGMENT} element={<AdminSubjectsPage />} />
+                  <Route path={`${ADMIN_SUBJECTS_SEGMENT}/:subjectId`} element={<AdminSubjectsPage />} />
+                  <Route path={ADMIN_POSTS_SEGMENT} element={<AdminPostsPage />} />
+                  <Route path={`${ADMIN_POSTS_SEGMENT}/:postId`} element={<AdminPostsPage />} />
+                  <Route path={ADMIN_TAGS_SEGMENT} element={<AdminTagsPage />} />
+                  <Route path={`${ADMIN_TAGS_SEGMENT}/:tagSlug`} element={<AdminTagsPage />} />
                 </Route>
               </Routes>
             </Suspense>

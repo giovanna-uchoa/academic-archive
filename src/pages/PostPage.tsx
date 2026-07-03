@@ -3,9 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { cmsApi } from '../utils/cmsApi';
 import type { Subject, Post } from '../utils/dataTypes';
 import { useAsyncData } from '../utils/useAsyncData';
-import Loading from '../components/ui/state/Loading';
+import AsyncBoundary from '../components/ui/state/AsyncBoundary';
 import NotFound from '../components/ui/state/NotFound';
-import ErrorDisplay from '../components/ui/state/Error';
 import BlogPost from '../components/blog/BlogPost';
 
 interface PostPageData {
@@ -33,17 +32,17 @@ export default function PostPage() {
   const post = data?.post ?? null;
   const subject = data?.subject ?? null;
 
-  if (loading) return <Loading />;
-
-  if (error) return <ErrorDisplay message={error} />;
-
-  if (!post) return <NotFound title="Post not found" />;
-
   return (
-    <BlogPost
-      post={post}
-      subjectTitle={subject?.title}
-      onBack={() => navigate(`/subjects/${subjectId ?? post.subjectId}`)}
-    />
+    <AsyncBoundary loading={loading} error={error}>
+      {!post ? (
+        <NotFound title="Post not found" />
+      ) : (
+        <BlogPost
+          post={post}
+          subjectTitle={subject?.title}
+          onBack={() => navigate(`/subjects/${subjectId ?? post.subjectId}`)}
+        />
+      )}
+    </AsyncBoundary>
   );
 }

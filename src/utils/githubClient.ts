@@ -38,6 +38,21 @@ function authHeaders(): HeadersInit {
   }
 }
 
+async function isMissing(response: Response, path: string): Promise<boolean> {
+  if (response.status === 404) return true
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${path}: ${response.status}`)
+  }
+  return false
+}
+
+async function throwIfWriteFailed(response: Response, path: string, action: 'write' | 'delete'): Promise<void> {
+  if (!response.ok) {
+    const body = await response.json().catch(() => null)
+    throw new Error(body?.message ?? `Failed to ${action} ${path}: ${response.status}`)
+  }
+}
+
 export async function getRawFile(path: string): Promise<string | null> {
   assertConfigured()
 
@@ -46,10 +61,7 @@ export async function getRawFile(path: string): Promise<string | null> {
     { cache: 'no-store' }
   )
 
-  if (response.status === 404) return null
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${path}: ${response.status}`)
-  }
+  if (await isMissing(response, path)) return null
 
   return response.text()
 }
@@ -67,10 +79,7 @@ export async function getFileWithSha(path: string): Promise<FileWithSha | null> 
     { headers: authHeaders() }
   )
 
-  if (response.status === 404) return null
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${path}: ${response.status}`)
-  }
+  if (await isMissing(response, path)) return null
 
   const json = await response.json()
   return { content: decodeUtf8Base64(json.content), sha: json.sha }
@@ -98,10 +107,7 @@ export async function putFile(
     }
   )
 
-  if (!response.ok) {
-    const body = await response.json().catch(() => null)
-    throw new Error(body?.message ?? `Failed to write ${path}: ${response.status}`)
-  }
+  await throwIfWriteFailed(response, path, 'write')
 
   const json = await response.json()
   return { sha: json.content.sha }
@@ -119,8 +125,5 @@ export async function deleteFile(path: string, sha: string, message: string): Pr
     }
   )
 
-  if (!response.ok) {
-    const body = await response.json().catch(() => null)
-    throw new Error(body?.message ?? `Failed to delete ${path}: ${response.status}`)
-  }
+  await throwIfWriteFailed(response, path, 'delete')
 }
