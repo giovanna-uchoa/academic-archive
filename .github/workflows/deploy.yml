@@ -32,6 +32,7 @@ jobs:
   build:
     needs: verify
     runs-on: ubuntu-latest
+    environment: github-pages
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,6 +45,12 @@ jobs:
           VITE_GITHUB_OWNER: ${{ github.repository_owner }}
           VITE_GITHUB_REPO: ${{ github.event.repository.name }}
           VITE_GITHUB_BRANCH: main
+          VITE_APP_NAME: ${{ vars.VITE_APP_NAME }}
+          VITE_APP_TITLE: ${{ vars.VITE_APP_TITLE }}
+          VITE_SOCIAL_GITHUB: ${{ vars.VITE_SOCIAL_GITHUB }}
+          VITE_SOCIAL_GITLAB: ${{ vars.VITE_SOCIAL_GITLAB }}
+          VITE_SOCIAL_LINKEDIN: ${{ vars.VITE_SOCIAL_LINKEDIN }}
+          VITE_SOCIAL_MAIL: ${{ vars.VITE_SOCIAL_MAIL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build
