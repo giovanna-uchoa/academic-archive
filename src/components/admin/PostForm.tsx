@@ -1,4 +1,4 @@
-import { SubmitEvent, useEffect, useRef, useState, useMemo } from 'react';
+import { SubmitEvent, useEffect, useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -13,10 +13,12 @@ import Alert from '@mui/material/Alert';
 import { cmsApi } from '../../utils/cmsApi';
 import type { Post, Subject, Tag } from '../../utils/dataTypes';
 import { formatAccessionNumber, normalizePostDate, sortPostsByDateDesc } from '../../utils/contentTaxonomy';
+import { getErrorMessage } from '../../utils/errors';
 import MarkdownEditor from './MarkdownEditor';
 import ConfirmDialog from './ConfirmDialog';
 import AdminListItem from './AdminListItem';
-import { useDirtyGuard } from './useDirtyGuard';
+import SectionLabel from './SectionLabel';
+import { useAdminCrudForm } from './useAdminCrudForm';
 
 interface PostFormProps {
   posts: Post[];
@@ -25,7 +27,7 @@ interface PostFormProps {
   reload: () => Promise<void>;
   setStatus: (status: string | null) => void;
   setStatusType: (type: 'success' | 'error') => void;
-  initialEditPostId?: number | null;
+  initialEditValue?: number | null;
   onEditComplete?: () => void;
   registerDirty?: (dirty: boolean) => void;
 }
@@ -50,14 +52,6 @@ const EMPTY_POST = {
   selectedTags: [] as string[],
 } satisfies PostFormState;
 
-function SectionLabel({ children }: { children: string }) {
-  return (
-    <Typography variant="subtitle2" color="text.secondary" sx={{ letterSpacing: 0.5 }}>
-      {children}
-    </Typography>
-  );
-}
-
 function PostForm({
   posts,
   subjects,
@@ -65,19 +59,24 @@ function PostForm({
   reload,
   setStatus,
   setStatusType,
-  initialEditPostId,
+  initialEditValue,
   onEditComplete,
   registerDirty,
 }: PostFormProps) {
-  const [postForm, setPostForm] = useState(EMPTY_POST);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editLoadingId, setEditLoadingId] = useState<number | null>(null);
   const [confirmDeletePostId, setConfirmDeletePostId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('all');
-  const formRef = useRef<HTMLDivElement>(null);
-  const { setBaseline } = useDirtyGuard(postForm, registerDirty);
+  const {
+    form: postForm,
+    setForm: setPostForm,
+    isSubmitting,
+    formRef,
+    setBaseline,
+    resetForm,
+    runAction,
+  } = useAdminCrudForm<PostFormState>({ initialValue: EMPTY_POST, registerDirty });
 
   const subjectById = useMemo(() => {
     return new Map(subjects.map(subject => [subject.id, subject]));
@@ -94,24 +93,18 @@ function PostForm({
   }, [posts, search, subjectFilter]);
 
   useEffect(() => {
-    if (initialEditPostId != null) {
-      handleEditPost(initialEditPostId);
+    if (initialEditValue != null) {
+      handleEditPost(initialEditValue);
     }
-  }, [initialEditPostId]);
+  }, [initialEditValue]);
 
-  const clearStatus = () => {
-    setStatus(null);
-  };
-
-  const resetForm = () => {
+  const resetFormState = () => {
     setEditingPostId(null);
-    setPostForm(EMPTY_POST);
-    setBaseline(EMPTY_POST);
+    resetForm();
   };
 
   const handlePostSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
-    clearStatus();
 
     const normalizedDate = normalizePostDate(postForm.date);
     if (!normalizedDate) {
@@ -130,35 +123,26 @@ function PostForm({
       tags: postForm.selectedTags,
     };
 
-    setIsSubmitting(true);
+    const wasEditing = editingPostId !== null;
 
-    try {
-      const wasEditing = editingPostId !== null;
-
-      if (editingPostId) {
-        await cmsApi.updatePost(editingPostId, payload);
-        setStatusType('success');
-        setStatus(`Post "${postForm.title}" updated.`);
-      } else {
-        await cmsApi.createPost(payload);
-        setStatusType('success');
-        setStatus(`Post "${postForm.title}" created.`);
+    const result = await runAction(
+      () => (editingPostId ? cmsApi.updatePost(editingPostId, payload) : cmsApi.createPost(payload)),
+      {
+        onSuccess: () => `Post "${postForm.title}" ${editingPostId ? 'updated' : 'created'}.`,
+        resetOnSuccess: resetFormState,
+        fallbackErrorMessage: 'Post save failed',
+        setStatus,
+        setStatusType,
+        reload,
       }
+    );
 
-      resetForm();
-      await reload();
-      if (wasEditing) onEditComplete?.();
-    } catch (err) {
-      setStatusType('error');
-      setStatus(err instanceof Error ? err.message : 'Post save failed');
-    } finally {
-      setIsSubmitting(false);
-    }
+    if (result && wasEditing) onEditComplete?.();
   };
 
   const handleEditPost = async (postId: number) => {
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    clearStatus();
+    setStatus(null);
     setEditLoadingId(postId);
 
     try {
@@ -184,38 +168,29 @@ function PostForm({
       setBaseline(nextForm);
     } catch (err) {
       setStatusType('error');
-      setStatus(err instanceof Error ? err.message : 'Failed to load post');
+      setStatus(getErrorMessage(err, 'Failed to load post'));
     } finally {
       setEditLoadingId(null);
     }
   };
 
   const handleDeletePost = async (postId: number) => {
-    clearStatus();
-    setIsSubmitting(true);
+    const wasEditing = editingPostId === postId;
 
-    try {
-      await cmsApi.deletePost(postId);
-      setStatusType('success');
-      setStatus('Post deleted.');
+    const result = await runAction(() => cmsApi.deletePost(postId), {
+      onSuccess: () => 'Post deleted.',
+      resetOnSuccess: wasEditing ? resetFormState : undefined,
+      fallbackErrorMessage: 'Delete failed',
+      setStatus,
+      setStatusType,
+      reload,
+    });
 
-      const wasEditing = editingPostId === postId;
-      if (wasEditing) {
-        resetForm();
-      }
-
-      await reload();
-      if (wasEditing) onEditComplete?.();
-    } catch (err) {
-      setStatusType('error');
-      setStatus(err instanceof Error ? err.message : 'Delete failed');
-    } finally {
-      setIsSubmitting(false);
-    }
+    if (result && wasEditing) onEditComplete?.();
   };
 
   const handleCancel = () => {
-    resetForm();
+    resetFormState();
     onEditComplete?.();
   };
 

@@ -11,7 +11,7 @@ interface AdminHeaderProps {
   onLoginClick: () => void
   onLogout: () => void
   status: string | null
-  statusType: 'success' | 'info' | 'warning' | 'error'
+  statusType: 'success' | 'error'
   error: string | null
   mode?: 'default' | 'hero'
 }

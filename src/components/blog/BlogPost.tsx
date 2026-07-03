@@ -29,11 +29,11 @@ function BlogPost({ post, subjectTitle, onBack }: BlogPostProps) {
   const tags = getPostTags(post);
   const formattedDate = formatPostDate(post.date);
   const timeSpent = post.timeSpent?.trim() || 'Time spent not specified';
-  const [mainCategory, setMainCategory] = useState<string>(subjectTitle ?? post.subjectId);
+  const [mainSubject, setMainSubject] = useState<string>(subjectTitle ?? post.subjectId);
 
   useEffect(() => {
     if (subjectTitle) {
-      setMainCategory(subjectTitle);
+      setMainSubject(subjectTitle);
       return;
     }
 
@@ -43,11 +43,11 @@ function BlogPost({ post, subjectTitle, onBack }: BlogPostProps) {
       try {
         const subject = await cmsApi.getSubject(post.subjectId);
         if (!cancelled) {
-          setMainCategory(subject?.title ?? post.subjectId);
+          setMainSubject(subject?.title ?? post.subjectId);
         }
       } catch {
         if (!cancelled) {
-          setMainCategory(post.subjectId);
+          setMainSubject(post.subjectId);
         }
       }
     }
@@ -78,9 +78,9 @@ function BlogPost({ post, subjectTitle, onBack }: BlogPostProps) {
               rowGap: 1,
             }}
           >
-            {/* Main Category */}
+            {/* Main Subject */}
             <Chip
-              label={mainCategory}
+              label={mainSubject}
               size="small"
               sx={{
                 fontWeight: 600,

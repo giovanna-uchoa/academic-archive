@@ -1,11 +1,11 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 
-interface ErrorProps {
+interface ErrorDisplayProps {
   message: string;
 }
 
-function Error({ message }: ErrorProps) {
+function ErrorDisplay({ message }: ErrorDisplayProps) {
   return (
     <Box
       component="main"
@@ -21,4 +21,4 @@ function Error({ message }: ErrorProps) {
   );
 }
 
-export default Error;
+export default ErrorDisplay;

@@ -14,7 +14,7 @@ import StatTile from '../../components/admin/StatTile';
 import MonthlyActivityChart from '../../components/admin/MonthlyActivityChart';
 import { renderSubjectIcon } from '../../utils/iconRenderer';
 import {
-  buildCategorySummary,
+  buildSubjectSummary,
   buildMonthlyActivity,
   sortPostsByDateDesc,
   formatAccessionNumber,
@@ -24,7 +24,7 @@ import {
 function AdminDashboardPage() {
   const { subjects, posts, tags } = useOutletContext<AdminOutletContext>();
 
-  const categorySummary = useMemo(() => buildCategorySummary(subjects, posts), [subjects, posts]);
+  const subjectSummary = useMemo(() => buildSubjectSummary(subjects, posts), [subjects, posts]);
   const recentPosts = useMemo(() => sortPostsByDateDesc(posts).slice(0, 6), [posts]);
   const monthlyActivity = useMemo(() => buildMonthlyActivity(posts), [posts]);
 
@@ -62,15 +62,15 @@ function AdminDashboardPage() {
         <Paper sx={{ p: 3, flex: 1 }}>
           <Stack spacing={2}>
             <Typography variant="h6">Subjects</Typography>
-            {categorySummary.length === 0 ? (
+            {subjectSummary.length === 0 ? (
               <Alert severity="info">No subjects yet.</Alert>
             ) : (
               <Stack spacing={1}>
-                {categorySummary.map((category) => (
+                {subjectSummary.map((subject) => (
                   <Box
-                    key={category.id}
+                    key={subject.id}
                     component={RouterLink}
-                    to={`/admin/subjects/${category.id}`}
+                    to={`/admin/subjects/${subject.id}`}
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
@@ -84,14 +84,14 @@ function AdminDashboardPage() {
                     }}
                   >
                     <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
-                      {category.icon && (
+                      {subject.icon && (
                         <Box sx={{ color: 'secondary.main', display: 'flex' }}>
-                          {renderSubjectIcon(category.icon, { size: 18 })}
+                          {renderSubjectIcon(subject.icon, { size: 18 })}
                         </Box>
                       )}
-                      <Typography noWrap>{category.title}</Typography>
+                      <Typography noWrap>{subject.title}</Typography>
                     </Stack>
-                    <Chip icon={<LibraryBig size={14} />} label={`${category.totalPosts} posts`} size="small" />
+                    <Chip icon={<LibraryBig size={14} />} label={`${subject.totalPosts} posts`} size="small" />
                   </Box>
                 ))}
               </Stack>

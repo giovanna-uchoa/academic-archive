@@ -1,7 +1,7 @@
 import type { Post, Subject, Tag, TagSummary } from './dataTypes'
 import { getRawFile, getFileWithSha, putFile, deleteFile } from './githubClient'
 import { parseFrontmatter, stringifyFrontmatter } from './frontmatter'
-import { normalizePostDate, getPostDate, toTagSlug } from './contentTaxonomy'
+import { normalizePostDate, getPostDate, toTagSlug, dedupeTags } from './contentTaxonomy'
 
 const MANIFEST_PATH = 'content/manifest.json'
 const DEFAULT_BLOG_SECTION_TITLE = 'Articles & Experiments'
@@ -34,10 +34,6 @@ interface SubjectFrontmatter {
 function normalizeBlogSectionTitle(value: string | null | undefined): string {
   const cleaned = value?.trim() ?? ''
   return cleaned || DEFAULT_BLOG_SECTION_TITLE
-}
-
-function normalizeTags(tags: string[] | undefined): string[] {
-  return [...new Set((tags ?? []).map((tag) => tag.trim()).filter(Boolean))]
 }
 
 function postSummary(post: Post): PostSummary {
@@ -119,12 +115,27 @@ async function readPostFile(id: number): Promise<Post | null> {
     date: normalizePostDate(data.date) ?? data.date,
     timeSpent: data.timeSpent,
     subjectId: data.subjectId,
-    tags: normalizeTags(data.tags),
+    tags: dedupeTags(data.tags),
   }
 }
 
 function computeNextPostId(manifest: Manifest): number {
   return manifest.posts.reduce((max, post) => Math.max(max, post.id), 0) + 1
+}
+
+function countTagOccurrences(posts: PostSummary[]): Map<string, number> {
+  const counts = new Map<string, number>()
+  for (const post of posts) {
+    for (const tag of post.tags ?? []) counts.set(tag, (counts.get(tag) ?? 0) + 1)
+  }
+  return counts
+}
+
+export interface CmsSnapshot {
+  subjects: Subject[]
+  posts: Post[]
+  tags: Tag[]
+  tagSummary: TagSummary[]
 }
 
 export const cmsApi = {
@@ -165,28 +176,39 @@ export const cmsApi = {
 
   async listTags(): Promise<Tag[]> {
     const manifest = await readManifest()
-    const names = new Set<string>()
-    for (const post of manifest.posts) {
-      for (const tag of post.tags ?? []) names.add(tag)
-    }
+    const counts = countTagOccurrences(manifest.posts)
 
-    return [...names]
+    return [...counts.keys()]
       .sort((a, b) => a.localeCompare(b))
       .map((name) => ({ name, slug: toTagSlug(name) }))
   },
 
   async listTagSummary(): Promise<TagSummary[]> {
     const manifest = await readManifest()
-    const counts = new Map<string, number>()
-    for (const post of manifest.posts) {
-      for (const tag of post.tags ?? []) {
-        counts.set(tag, (counts.get(tag) ?? 0) + 1)
-      }
-    }
+    const counts = countTagOccurrences(manifest.posts)
 
     return [...counts.entries()]
       .map(([name, totalPosts]) => ({ slug: toTagSlug(name), label: name, totalPosts }))
       .sort((a, b) => b.totalPosts - a.totalPosts || a.label.localeCompare(b.label))
+  },
+
+  async listAll(): Promise<CmsSnapshot> {
+    const manifest = await readManifest()
+    const counts = countTagOccurrences(manifest.posts)
+
+    const posts = manifest.posts
+      .map(toPostWithEmptyContent)
+      .sort((a, b) => getPostDate(a).getTime() - getPostDate(b).getTime())
+
+    const tags = [...counts.keys()]
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ name, slug: toTagSlug(name) }))
+
+    const tagSummary = [...counts.entries()]
+      .map(([name, totalPosts]) => ({ slug: toTagSlug(name), label: name, totalPosts }))
+      .sort((a, b) => b.totalPosts - a.totalPosts || a.label.localeCompare(b.label))
+
+    return { subjects: manifest.subjects, posts, tags, tagSummary }
   },
 
   // =========================
@@ -293,7 +315,7 @@ export const cmsApi = {
       ...post,
       id,
       date: normalizedDate,
-      tags: normalizeTags(post.tags),
+      tags: dedupeTags(post.tags),
     }
 
     await putFile(
@@ -318,7 +340,7 @@ export const cmsApi = {
       ...post,
       id: postId,
       date: normalizedDate,
-      tags: normalizeTags(post.tags),
+      tags: dedupeTags(post.tags),
     }
 
     const existingFile = await getFileWithSha(postFilePath(postId))
@@ -367,31 +389,32 @@ export const cmsApi = {
 
     const { manifest, sha } = await readManifestForWrite()
     const affected = manifest.posts.filter((post) => (post.tags ?? []).includes(oldName))
-    const updatedPostIds: number[] = []
 
-    for (const summary of affected) {
-      const full = await readPostFile(summary.id)
-      if (!full) continue
+    const updatedPostIds = (await Promise.all(
+      affected.map(async (summary) => {
+        const full = await readPostFile(summary.id)
+        if (!full) return null
 
-      const updated: Post = {
-        ...full,
-        tags: normalizeTags(full.tags.map((tag) => (tag === oldName ? cleanedNewName : tag))),
-      }
+        const updated: Post = {
+          ...full,
+          tags: dedupeTags(full.tags.map((tag) => (tag === oldName ? cleanedNewName : tag))),
+        }
 
-      const existingFile = await getFileWithSha(postFilePath(summary.id))
-      await putFile(
-        postFilePath(summary.id),
-        stringifyFrontmatter(toPostFrontmatter(updated), updated.content),
-        `Rename tag "${oldName}" to "${cleanedNewName}" on post ${summary.id}`,
-        existingFile?.sha
-      )
+        const existingFile = await getFileWithSha(postFilePath(summary.id))
+        await putFile(
+          postFilePath(summary.id),
+          stringifyFrontmatter(toPostFrontmatter(updated), updated.content),
+          `Rename tag "${oldName}" to "${cleanedNewName}" on post ${summary.id}`,
+          existingFile?.sha
+        )
 
-      updatedPostIds.push(summary.id)
-    }
+        return summary.id
+      })
+    )).filter((id): id is number => id !== null)
 
     manifest.posts = manifest.posts.map((post) =>
       (post.tags ?? []).includes(oldName)
-        ? { ...post, tags: normalizeTags(post.tags.map((tag) => (tag === oldName ? cleanedNewName : tag))) }
+        ? { ...post, tags: dedupeTags(post.tags.map((tag) => (tag === oldName ? cleanedNewName : tag))) }
         : post
     )
 
@@ -403,24 +426,25 @@ export const cmsApi = {
   async removeTag(name: string): Promise<{ updatedPostIds: number[] }> {
     const { manifest, sha } = await readManifestForWrite()
     const affected = manifest.posts.filter((post) => (post.tags ?? []).includes(name))
-    const updatedPostIds: number[] = []
 
-    for (const summary of affected) {
-      const full = await readPostFile(summary.id)
-      if (!full) continue
+    const updatedPostIds = (await Promise.all(
+      affected.map(async (summary) => {
+        const full = await readPostFile(summary.id)
+        if (!full) return null
 
-      const updated: Post = { ...full, tags: full.tags.filter((tag) => tag !== name) }
+        const updated: Post = { ...full, tags: full.tags.filter((tag) => tag !== name) }
 
-      const existingFile = await getFileWithSha(postFilePath(summary.id))
-      await putFile(
-        postFilePath(summary.id),
-        stringifyFrontmatter(toPostFrontmatter(updated), updated.content),
-        `Remove tag "${name}" from post ${summary.id}`,
-        existingFile?.sha
-      )
+        const existingFile = await getFileWithSha(postFilePath(summary.id))
+        await putFile(
+          postFilePath(summary.id),
+          stringifyFrontmatter(toPostFrontmatter(updated), updated.content),
+          `Remove tag "${name}" from post ${summary.id}`,
+          existingFile?.sha
+        )
 
-      updatedPostIds.push(summary.id)
-    }
+        return summary.id
+      })
+    )).filter((id): id is number => id !== null)
 
     manifest.posts = manifest.posts.map((post) =>
       (post.tags ?? []).includes(name)

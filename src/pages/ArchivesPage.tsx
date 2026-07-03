@@ -4,9 +4,8 @@ import Typography from '@mui/material/Typography';
 
 import { useCmsContent } from '../utils/useCmsContent';
 import { buildArchiveGroups } from '../utils/contentTaxonomy';
-import Loading from '../components/ui/state/Loading';
-import ErrorDisplay from '../components/ui/state/Error';
-import ArchivesHeader from '../components/archive/ArchivesHeader';
+import AsyncBoundary from '../components/ui/state/AsyncBoundary';
+import PageHeader from '../components/ui/PageHeader';
 import ArchiveMonthGroup from '../components/archive/ArchiveMonthGroup';
 
 export default function ArchivesPage() {
@@ -22,13 +21,14 @@ export default function ArchivesPage() {
     return acc;
   }, {});
 
-  if (loading) return <Loading />;
-
-  if (error) return <ErrorDisplay message={error} />;
-
   return (
-    <Stack spacing={4}>
-      <ArchivesHeader />
+    <AsyncBoundary loading={loading} error={error}>
+      <Stack spacing={4}>
+        <PageHeader
+          eyebrow="Archives"
+          title="Timeline by Date"
+          description="Browse content through a chronological timeline organized by month and year."
+        />
 
         {Object.entries(groupedByYear)
           .sort(([yearA], [yearB]) => Number(yearB) - Number(yearA))
@@ -63,7 +63,7 @@ export default function ArchivesPage() {
               </Box>
             </Stack>
           ))}
-
-    </Stack>
+      </Stack>
+    </AsyncBoundary>
   );
 }

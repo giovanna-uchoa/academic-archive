@@ -96,4 +96,37 @@ describe('githubClient', () => {
     expect(options.headers.Authorization).toBe('Bearer test-token')
     expect(JSON.parse(options.body).sha).toBe('some-sha')
   })
+
+  it('returns null for a missing file on getFileWithSha (404)', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404 }) as unknown as typeof fetch
+
+    const { getFileWithSha } = await import('./githubClient')
+    expect(await getFileWithSha('content/posts/999.md')).toBeNull()
+  })
+
+  it('propagates the GitHub error body message on putFile failure', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: () => Promise.resolve({ message: 'Validation failed' }),
+    }) as unknown as typeof fetch
+
+    const { putFile } = await import('./githubClient')
+    await expect(putFile('content/posts/16.md', 'hello', 'Create post')).rejects.toThrow(
+      'Validation failed'
+    )
+  })
+
+  it('propagates the GitHub error body message on deleteFile failure', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 409,
+      json: () => Promise.resolve({ message: 'sha mismatch' }),
+    }) as unknown as typeof fetch
+
+    const { deleteFile } = await import('./githubClient')
+    await expect(deleteFile('content/posts/16.md', 'some-sha', 'Delete post')).rejects.toThrow(
+      'sha mismatch'
+    )
+  })
 })

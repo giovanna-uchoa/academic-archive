@@ -44,31 +44,42 @@ src/
     MarkdownContent.tsx       # GFM renderer (raw HTML is escaped)
     admin/
       AdminHeader.tsx
+      AdminListItem.tsx
+      ConfirmDialog.tsx
       LoginDialog.tsx
+      MarkdownEditor.tsx
+      MonthlyActivityChart.tsx
       PostForm.tsx
+      SectionLabel.tsx        # Shared form section label (Subject/Post forms)
+      StatTile.tsx            # Dashboard stat tile (built on ui/TileCard)
       SubjectForm.tsx
       TagForm.tsx
+      useAdminCrudForm.ts      # Shared form-state/dirty-guard/submit-lifecycle hook
+      useDirtyGuard.ts
     archive/
       ArchiveMonthGroup.tsx
       ArchivePostItem.tsx
-      ArchivesHeader.tsx
     blog/
-      BlogCard.tsx            # Post preview card
+      BlogCard.tsx            # Post preview card (built on ui/TileCard)
       BlogPost.tsx            # Full post view with hero header
       BlogSection.tsx
     catalog/
-      CategoryCard.tsx
-      CategoryHeader.tsx
+      SubjectCard.tsx         # Catalog tile (built on ui/TileCard)
+      SubjectHeader.tsx
     ui/
       BackButton.tsx
+      FeaturedTileGrid.tsx    # Generic "first item featured" grid layout
       Logo.tsx
+      PageHeader.tsx          # Shared eyebrow/title/description page header
       SocialLinks.tsx
       ThemeToggle.tsx
+      TileCard.tsx            # Shared card shell (hover affordance, sizing)
       layout/
         PageContent.tsx
         PageTopBar.tsx
       state/
-        Error.tsx
+        AsyncBoundary.tsx     # Wraps loading/error early-returns for a page
+        ErrorDisplay.tsx
         Loading.tsx
         NotFound.tsx
   pages/
@@ -80,19 +91,26 @@ src/
     TagsPage.tsx               # /tags
     TagPage.tsx                # /tags/:tagSlug
     admin/
-      AdminPage.tsx           # /admin
+      AdminLayout.tsx         # /admin layout: auth, nav tabs, dirty-guard
+      AdminDashboardPage.tsx  # /admin (index)
+      AdminSubjectsPage.tsx   # /admin/subjects, /admin/subjects/:subjectId
+      AdminPostsPage.tsx      # /admin/posts, /admin/posts/:postId
+      AdminTagsPage.tsx       # /admin/tags, /admin/tags/:tagSlug
+      adminSections.ts        # Shared path/segment constants (routes + nav tabs)
+      useAdminEditRoute.ts    # Maps a route param to an initial edit value
   theme/
     muiTheme.ts
     ThemeProvider.tsx
   utils/
     cmsApi.ts                 # GitHub-backed CRUD + date normalisation
-    contentTaxonomy.ts        # Tag/category summary, archive grouping, date parsing
+    contentTaxonomy.ts        # Tag/subject summary, archive grouping, date parsing
     dataTypes.ts              # Shared TypeScript types
+    errors.ts                  # getErrorMessage(err, fallback) helper
     frontmatter.ts             # YAML frontmatter parse/stringify
     githubAuth.ts               # PAT storage + validation
     githubClient.ts             # GitHub Contents API transport
-    useCmsContent.ts             # Data-fetching hook
-    usePageTitle.ts
+    useAsyncData.ts              # Generic fetch/loading/error/reload hook
+    useCmsContent.ts             # Thin useAsyncData wrapper over cmsApi.listAll()
     iconRenderer.tsx
     socials.ts
 content/

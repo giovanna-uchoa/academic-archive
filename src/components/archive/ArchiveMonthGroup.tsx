@@ -6,9 +6,10 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import ArchivePostItem from './ArchivePostItem';
+import type { ArchiveGroup } from '../../utils/dataTypes';
 
 interface ArchiveMonthGroupProps {
-  group: any;
+  group: ArchiveGroup;
   subjectTitles: Map<string, string>;
 }
 
@@ -38,7 +39,7 @@ function ArchiveMonthGroup({ group, subjectTitles }: ArchiveMonthGroupProps) {
         </Stack>
 
         <Stack divider={<Divider flexItem />}>
-          {group.posts.map((post: any) => (
+          {group.posts.map((post) => (
             <ArchivePostItem
               key={post.id}
               post={post}

@@ -45,7 +45,7 @@ function BlogSection({ subject, subjectPosts }: BlogSectionProps) {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column-reverse', gap: { xs: 2, sm: 3 } }}>
             {subjectPosts.map((post) => (
-              <BlogCard key={post.id} post={post} onSelectRedirectTo={`/subjects/${subject.id}/post/${post.id}`} />
+              <BlogCard key={post.id} post={post} to={`/subjects/${subject.id}/post/${post.id}`} />
             ))}
           </Box>
         )}

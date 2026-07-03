@@ -1,4 +1,4 @@
-import { type SubmitEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { type SubmitEvent, useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -14,7 +14,7 @@ import { cmsApi } from '../../utils/cmsApi';
 import type { Tag, TagSummary } from '../../utils/dataTypes';
 import ConfirmDialog from './ConfirmDialog';
 import AdminListItem from './AdminListItem';
-import { useDirtyGuard } from './useDirtyGuard';
+import { useAdminCrudForm } from './useAdminCrudForm';
 
 interface TagFormProps {
   tags: Tag[];
@@ -22,7 +22,7 @@ interface TagFormProps {
   reload: () => Promise<void>;
   setStatus: (status: string | null) => void;
   setStatusType: (type: 'success' | 'error') => void;
-  initialEditSlug?: string | null;
+  initialEditValue?: string | null;
   onEditComplete?: () => void;
   registerDirty?: (dirty: boolean) => void;
 }
@@ -33,16 +33,21 @@ function TagForm({
   reload,
   setStatus,
   setStatusType,
-  initialEditSlug,
+  initialEditValue,
   onEditComplete,
   registerDirty,
 }: TagFormProps) {
-  const [name, setName] = useState('');
   const [editingTagName, setEditingTagName] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmDeleteTag, setConfirmDeleteTag] = useState<Tag | null>(null);
-  const formRef = useRef<HTMLDivElement>(null);
-  const { setBaseline } = useDirtyGuard(name, registerDirty);
+  const {
+    form: name,
+    setForm: setName,
+    isSubmitting,
+    formRef,
+    resetForm,
+    loadForm,
+    runAction,
+  } = useAdminCrudForm<string>({ initialValue: '', registerDirty });
 
   const totalPostsBySlug = useMemo(
     () => new Map(tagSummary.map(summary => [summary.slug, summary.totalPosts])),
@@ -54,25 +59,19 @@ function TagForm({
   }, [tags, totalPostsBySlug]);
 
   useEffect(() => {
-    if (initialEditSlug) {
-      const tag = tags.find(item => item.slug === initialEditSlug);
+    if (initialEditValue) {
+      const tag = tags.find(item => item.slug === initialEditValue);
       if (tag) handleEditTag(tag);
     }
-  }, [initialEditSlug, tags]);
+  }, [initialEditValue, tags]);
 
-  const clearStatus = () => {
-    setStatus(null);
-  };
-
-  const resetForm = () => {
-    setName('');
+  const resetFormState = () => {
     setEditingTagName(null);
-    setBaseline('');
+    resetForm();
   };
 
   const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
-    clearStatus();
 
     if (!editingTagName) return;
 
@@ -83,58 +82,42 @@ function TagForm({
       return;
     }
 
-    setIsSubmitting(true);
+    const result = await runAction(() => cmsApi.renameTag(editingTagName, trimmedName), {
+      onSuccess: ({ updatedPostIds }) =>
+        `Tag "${editingTagName}" renamed to "${trimmedName}" on ${updatedPostIds.length} post(s).`,
+      resetOnSuccess: resetFormState,
+      fallbackErrorMessage: 'Tag rename failed',
+      setStatus,
+      setStatusType,
+      reload,
+    });
 
-    try {
-      const { updatedPostIds } = await cmsApi.renameTag(editingTagName, trimmedName);
-      setStatusType('success');
-      setStatus(`Tag "${editingTagName}" renamed to "${trimmedName}" on ${updatedPostIds.length} post(s).`);
-
-      resetForm();
-      await reload();
-      onEditComplete?.();
-    } catch (err) {
-      setStatusType('error');
-      setStatus(err instanceof Error ? err.message : 'Tag rename failed');
-    } finally {
-      setIsSubmitting(false);
-    }
+    if (result) onEditComplete?.();
   };
 
   const handleEditTag = (tag: Tag) => {
-    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setEditingTagName(tag.name);
-    setName(tag.name);
-    setBaseline(tag.name);
-    clearStatus();
+    loadForm(tag.name);
+    setStatus(null);
   };
 
   const handleDeleteTag = async (tag: Tag) => {
-    clearStatus();
-    setIsSubmitting(true);
+    const wasEditing = editingTagName === tag.name;
 
-    try {
-      const { updatedPostIds } = await cmsApi.removeTag(tag.name);
-      setStatusType('success');
-      setStatus(`Tag "${tag.name}" removed from ${updatedPostIds.length} post(s).`);
+    const result = await runAction(() => cmsApi.removeTag(tag.name), {
+      onSuccess: ({ updatedPostIds }) => `Tag "${tag.name}" removed from ${updatedPostIds.length} post(s).`,
+      resetOnSuccess: wasEditing ? resetFormState : undefined,
+      fallbackErrorMessage: 'Delete failed',
+      setStatus,
+      setStatusType,
+      reload,
+    });
 
-      const wasEditing = editingTagName === tag.name;
-      if (wasEditing) {
-        resetForm();
-      }
-
-      await reload();
-      if (wasEditing) onEditComplete?.();
-    } catch (err) {
-      setStatusType('error');
-      setStatus(err instanceof Error ? err.message : 'Delete failed');
-    } finally {
-      setIsSubmitting(false);
-    }
+    if (result && wasEditing) onEditComplete?.();
   };
 
   const handleCancel = () => {
-    resetForm();
+    resetFormState();
     onEditComplete?.();
   };
 

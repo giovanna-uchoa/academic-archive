@@ -13,6 +13,12 @@ import { useCmsContent } from '../../utils/useCmsContent'
 import { getStoredToken, clearStoredToken, validateToken } from '../../utils/githubAuth'
 import type { GitHubUser } from '../../utils/githubAuth'
 import type { Post, Subject, Tag, TagSummary } from '../../utils/dataTypes'
+import {
+  ADMIN_DASHBOARD_PATH,
+  ADMIN_SUBJECTS_PATH,
+  ADMIN_POSTS_PATH,
+  ADMIN_TAGS_PATH,
+} from './adminSections'
 
 export interface AdminOutletContext {
   subjects: Subject[]
@@ -26,15 +32,15 @@ export interface AdminOutletContext {
 }
 
 const SECTIONS = [
-  { label: 'Dashboard', value: '/admin' },
-  { label: 'Subjects', value: '/admin/subjects' },
-  { label: 'Posts', value: '/admin/posts' },
-  { label: 'Tags', value: '/admin/tags' },
+  { label: 'Dashboard', value: ADMIN_DASHBOARD_PATH },
+  { label: 'Subjects', value: ADMIN_SUBJECTS_PATH },
+  { label: 'Posts', value: ADMIN_POSTS_PATH },
+  { label: 'Tags', value: ADMIN_TAGS_PATH },
 ]
 
 function getActiveSection(pathname: string): string {
   const match = SECTIONS.slice(1).find((section) => pathname.startsWith(section.value))
-  return match?.value ?? '/admin'
+  return match?.value ?? ADMIN_DASHBOARD_PATH
 }
 
 const STATUS_AUTO_DISMISS_MS = 4000
