@@ -9,7 +9,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import type { Post } from '../../utils/dataTypes';
-import { formatPostDate } from '../../utils/contentTaxonomy';
+import { formatAccessionNumber, formatPostDate } from '../../utils/contentTaxonomy';
 import { getContentPalette } from '../../theme/muiTheme';
 
 interface BlogCardProps {
@@ -21,7 +21,7 @@ interface BlogCardProps {
 function BlogCard({ post, onSelectRedirectTo, featured = false }: BlogCardProps) {
   const theme = useTheme();
   const affordanceSize = featured ? 40 : 32;
-  const accessionNumber = `№${String(post.id).padStart(3, '0')}`;
+  const accessionNumber = formatAccessionNumber(post.id);
 
   return (
     <Card
